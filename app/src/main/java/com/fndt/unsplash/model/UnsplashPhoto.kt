@@ -1,7 +1,9 @@
 package com.fndt.unsplash.model
 
-//TODO POJO
 data class UnsplashPhoto(
     var id: String,
-    var urls: UnsplashUrls
+    var urls: UnsplashUrls,
+    var width: Int,
+    var height: Int,
+    var description: String
 )

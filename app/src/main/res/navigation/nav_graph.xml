@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph.xml"
+    app:startDestination="@id/random_image">
+    <fragment
+        android:id="@+id/random_image"
+        android:name="com.fndt.unsplash.fragments.ImageDescriptionFragment">
+        <action
+            android:id="@+id/to_search"
+            app:destination="@id/search"
+            app:popUpTo="@id/search"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/to_collections"
+            app:destination="@id/collection_list"
+            app:popUpTo="@id/search"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/search"
+        android:name="com.fndt.unsplash.fragments.SearchFragment">
+        <action
+            android:id="@+id/to_random_image"
+            app:destination="@id/random_image"
+            app:popUpTo="@id/search"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/to_collections"
+            app:destination="@id/collection_list"
+            app:popUpTo="@id/search"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/collection_list"
+        android:name="com.fndt.unsplash.fragments.CollectionsFragment">
+        <action
+            android:id="@+id/to_search"
+            app:destination="@id/search"
+            app:popUpTo="@id/collection_list"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/to_random_image"
+            app:destination="@id/random_image"
+            app:popUpTo="@id/collection_list"
+            app:popUpToInclusive="true" />
+    </fragment>
+</navigation>

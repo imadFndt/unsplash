@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">unsplash</string>
     <string name="random_photo">Random photo</string>
+    <string name="collections">Collections</string>
+    <string name="random">Random</string>
+    <string name="search">Search</string>
+    <string name="photo">Photo</string>
+    <string name="searched_pictures_will_be_shown_here">Searched pictures will be shown here</string>
+    <string name="nothing_found">Nothing found</string>
 </resources>

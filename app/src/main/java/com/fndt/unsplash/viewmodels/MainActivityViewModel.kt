@@ -1,13 +1,15 @@
-package com.fndt.unsplash
+package com.fndt.unsplash.viewmodels
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.fndt.unsplash.model.UnsplashPhoto
 import com.fndt.unsplash.model.UnsplashRepository
 import kotlinx.coroutines.launch
 
 class MainActivityViewModel(private val repository: UnsplashRepository) : ViewModel() {
-    val randomImage = repository.randomPhoto
+    val randomImage: LiveData<UnsplashPhoto> = repository.randomPhoto
 
     init {
         requestUpdate()
