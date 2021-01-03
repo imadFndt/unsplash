@@ -20,9 +20,6 @@ class UnsplashModule(private val context: Context) {
     fun remote() = UnsplashServiceProvider.unsplashService
 
     @Provides
-    fun viewModelFactory(repository: UnsplashRepository) = MainActivityViewModel.Factory(repository)
-
-    @Provides
     fun searchViewModelFactory(repository: UnsplashRepository) = SearchFragmentViewModel.Factory(repository)
 
     @Provides

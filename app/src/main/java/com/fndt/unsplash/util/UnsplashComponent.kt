@@ -9,7 +9,6 @@ import javax.inject.Singleton
 @Singleton
 @Component(modules = [UnsplashModule::class])
 interface UnsplashComponent {
-    fun getActivityViewModelFactory(): MainActivityViewModel.Factory
     fun getSearchFragmentModelFactory(): SearchFragmentViewModel.Factory
     fun getRandomImageViewModelFactory(): RandomImageFragmentViewModel.Factory
 }

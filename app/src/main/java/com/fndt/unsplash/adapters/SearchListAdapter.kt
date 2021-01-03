@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.fndt.unsplash.R
-import com.fndt.unsplash.SearchDiffUtilCallback
+import com.fndt.unsplash.util.SearchDiffUtilCallback
 import com.fndt.unsplash.databinding.ImageItemBinding
 import com.fndt.unsplash.model.UnsplashPhoto
 import com.fndt.unsplash.model.UnsplashSearchResult
@@ -52,5 +52,4 @@ class SearchListAdapter : RecyclerView.Adapter<SearchListAdapter.SearchListViewH
             start()
         }
     }
-
 }

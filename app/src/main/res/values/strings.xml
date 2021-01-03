@@ -14,4 +14,5 @@
     <string name="description_colon">Description:</string>
     <string name="image_link">Image link</string>
     <string name="value_pixels">%s px</string>
+    <string name="placeholder">Placeholder</string>
 </resources>

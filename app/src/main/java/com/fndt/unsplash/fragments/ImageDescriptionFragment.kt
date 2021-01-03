@@ -9,13 +9,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.fndt.unsplash.R
-import com.fndt.unsplash.databinding.DescriptionFragmentBinding
+import com.fndt.unsplash.databinding.ImageDescriptionFragmentBinding
 import com.fndt.unsplash.viewmodels.ImageDescriptionFragmentViewModel
 import com.squareup.picasso.Picasso
 
 
 class ImageDescriptionFragment : Fragment() {
-    private lateinit var binding: DescriptionFragmentBinding
+    private lateinit var binding: ImageDescriptionFragmentBinding
     private lateinit var viewModel: ImageDescriptionFragmentViewModel
 
     override fun onCreateView(
@@ -23,7 +23,7 @@ class ImageDescriptionFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = DescriptionFragmentBinding.inflate(inflater, container, false)
+        binding = ImageDescriptionFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

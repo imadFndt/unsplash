@@ -1,4 +1,4 @@
-package com.fndt.unsplash
+package com.fndt.unsplash.util
 
 import androidx.recyclerview.widget.DiffUtil
 import com.fndt.unsplash.model.UnsplashPhoto
@@ -9,7 +9,6 @@ class SearchDiffUtilCallback(
 ) : DiffUtil.Callback() {
 
     override fun getOldListSize() = oldList.size
-
 
     override fun getNewListSize() = newList.size
 
