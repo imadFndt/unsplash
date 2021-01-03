@@ -38,6 +38,7 @@
         android:layout_marginHorizontal="3dp"
         android:layout_marginTop="3dp"
         android:background="@color/white"
+        android:splitMotionEvents="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/search_text_layout"
         tools:itemCount="20" />

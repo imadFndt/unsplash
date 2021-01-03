@@ -8,5 +8,5 @@
         android:name="com.fndt.unsplash.fragments.SearchFragment" />
     <fragment
         android:id="@+id/image_details"
-        android:name="com.fndt.unsplash.fragments.ImageDescriptionFragment" />
+        android:name="com.fndt.unsplash.fragments.SearchImageSelectedFragment" />
 </navigation>

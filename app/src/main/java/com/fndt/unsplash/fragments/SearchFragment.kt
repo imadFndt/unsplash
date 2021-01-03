@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
@@ -21,6 +22,7 @@ import com.fndt.unsplash.R
 import com.fndt.unsplash.adapters.SearchListAdapter
 import com.fndt.unsplash.databinding.SearchFragmentBinding
 import com.fndt.unsplash.util.UnsplashApplication
+import com.fndt.unsplash.viewmodels.MainActivityViewModel
 import com.fndt.unsplash.viewmodels.SearchFragmentViewModel
 
 
@@ -29,12 +31,13 @@ class SearchFragment : Fragment() {
     private val viewModel: SearchFragmentViewModel by viewModels {
         (requireActivity().application as UnsplashApplication).component.getSearchFragmentModelFactory()
     }
+    private val activityViewModel: MainActivityViewModel by activityViewModels()
 
     private val searchTextWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
         override fun afterTextChanged(s: Editable?) {
-            viewModel.currentSearchText = s.toString()
+            viewModel.setText(s.toString())
         }
     }
 
@@ -50,6 +53,8 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val adapter = SearchListAdapter()
+        adapter.itemClickListener = { activityViewModel.selectItem(it) }
+
         binding.recyclerList.adapter = adapter
         binding.recyclerList.layoutManager = GridLayoutManager(context, 3, GridLayoutManager.VERTICAL, false)
         with(DividerItemDecoration(context, DividerItemDecoration.HORIZONTAL)) {
@@ -76,15 +81,20 @@ class SearchFragment : Fragment() {
             }
         })
 
+        binding.searchEditText.setText(viewModel.currentSearchText.value)
         binding.searchEditText.addTextChangedListener(searchTextWatcher)
         binding.searchEditText.setOnEditorActionListener { _, actionId, event ->
-            viewModel.currentSearchText = binding.searchEditText.text.toString()
+            viewModel.setText(binding.searchEditText.text.toString())
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 binding.searchTextLayout.clearFocus()
                 hideKeyboard()
                 return@setOnEditorActionListener true
             }
             return@setOnEditorActionListener false
+        }
+
+        viewModel.currentSearchText.observe(viewLifecycleOwner) {
+            if (it.isNotEmpty()) viewModel.requestSearch(it, 1)
         }
 
         viewModel.photos.observe(viewLifecycleOwner) { result ->

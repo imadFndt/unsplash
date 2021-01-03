@@ -11,4 +11,5 @@
     <color name="colorPrimary">@color/purple_500</color>
     <color name="colorPrimaryDark">@color/purple_700</color>
     <color name="circularTrackColor">@android:color/darker_gray</color>
+    <color name="imageHighLightColor">#801E1E1E</color>
 </resources>

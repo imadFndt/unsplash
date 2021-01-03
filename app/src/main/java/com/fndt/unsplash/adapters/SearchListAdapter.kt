@@ -7,19 +7,25 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.fndt.unsplash.R
-import com.fndt.unsplash.util.SearchDiffUtilCallback
 import com.fndt.unsplash.databinding.ImageItemBinding
 import com.fndt.unsplash.model.UnsplashPhoto
 import com.fndt.unsplash.model.UnsplashSearchResult
+import com.fndt.unsplash.util.SearchDiffUtilCallback
 import com.squareup.picasso.Picasso
 
 class SearchListAdapter : RecyclerView.Adapter<SearchListAdapter.SearchListViewHolder>() {
     private val items = mutableListOf<UnsplashPhoto>()
+    var itemClickListener: ((UnsplashPhoto) -> Unit)? = null
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchListViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val holder = SearchListViewHolder(ImageItemBinding.inflate(inflater, parent, false)).apply {
             binding.itemImage.layoutParams.height = parent.measuredWidth / 3
+        }
+        holder.binding.itemImage.setOnClickListener {
+            val pos = holder.adapterPosition
+            if (pos != RecyclerView.NO_POSITION) itemClickListener?.invoke(items[pos])
         }
         return holder
     }
