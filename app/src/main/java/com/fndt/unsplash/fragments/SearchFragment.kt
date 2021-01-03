@@ -13,7 +13,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
@@ -22,15 +21,11 @@ import com.fndt.unsplash.R
 import com.fndt.unsplash.adapters.SearchListAdapter
 import com.fndt.unsplash.databinding.SearchFragmentBinding
 import com.fndt.unsplash.util.UnsplashApplication
-import com.fndt.unsplash.viewmodels.MainActivityViewModel
 import com.fndt.unsplash.viewmodels.SearchFragmentViewModel
 
 
 class SearchFragment : Fragment() {
     private lateinit var binding: SearchFragmentBinding
-    private val activityViewModel: MainActivityViewModel by activityViewModels {
-        (requireActivity().application as UnsplashApplication).component.getActivityViewModelFactory()
-    }
     private val viewModel: SearchFragmentViewModel by viewModels {
         (requireActivity().application as UnsplashApplication).component.getSearchFragmentModelFactory()
     }

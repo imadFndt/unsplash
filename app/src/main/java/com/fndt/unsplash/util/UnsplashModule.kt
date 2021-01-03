@@ -4,6 +4,7 @@ import android.content.Context
 import com.fndt.unsplash.model.UnsplashRepository
 import com.fndt.unsplash.remote.UnsplashServiceProvider
 import com.fndt.unsplash.viewmodels.MainActivityViewModel
+import com.fndt.unsplash.viewmodels.RandomImageFragmentViewModel
 import com.fndt.unsplash.viewmodels.SearchFragmentViewModel
 import dagger.Module
 import dagger.Provides
@@ -23,4 +24,8 @@ class UnsplashModule(private val context: Context) {
 
     @Provides
     fun searchViewModelFactory(repository: UnsplashRepository) = SearchFragmentViewModel.Factory(repository)
+
+    @Provides
+    fun randomImageViewModelFactory(repository: UnsplashRepository) =
+        RandomImageFragmentViewModel.Factory(repository)
 }

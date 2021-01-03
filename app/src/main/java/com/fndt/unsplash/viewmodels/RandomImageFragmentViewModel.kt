@@ -8,11 +8,20 @@ import com.fndt.unsplash.model.UnsplashPhoto
 import com.fndt.unsplash.model.UnsplashRepository
 import kotlinx.coroutines.launch
 
-class MainActivityViewModel(private val repository: UnsplashRepository) : ViewModel() {
+class RandomImageFragmentViewModel(private val repository: UnsplashRepository) : ViewModel() {
+    val randomImage: LiveData<UnsplashPhoto> = repository.randomPhoto
+
+    init {
+        requestUpdate()
+    }
+
+    private fun requestUpdate() {
+        viewModelScope.launch { repository.requestRandomPhoto() }
+    }
 
     class Factory(private val repository: UnsplashRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-            return MainActivityViewModel(repository) as T
+            return RandomImageFragmentViewModel(repository) as T
         }
     }
 }

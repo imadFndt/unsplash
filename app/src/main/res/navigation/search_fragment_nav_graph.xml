@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/search_fragment_nav_graph"
+    app:startDestination="@id/search">
+    <fragment
+        android:id="@+id/search"
+        android:name="com.fndt.unsplash.fragments.SearchFragment" />
+    <fragment
+        android:id="@+id/image_details"
+        android:name="com.fndt.unsplash.fragments.ImageDescriptionFragment" />
+</navigation>

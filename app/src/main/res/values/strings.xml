@@ -7,4 +7,11 @@
     <string name="photo">Photo</string>
     <string name="searched_pictures_will_be_shown_here">Searched pictures will be shown here</string>
     <string name="nothing_found">Nothing found</string>
+    <string name="picture">Picture</string>
+    <string name="width">Width</string>
+    <string name="height">Height</string>
+    <string name="description">Description</string>
+    <string name="description_colon">Description:</string>
+    <string name="image_link">Image link</string>
+    <string name="value_pixels">%s px</string>
 </resources>
