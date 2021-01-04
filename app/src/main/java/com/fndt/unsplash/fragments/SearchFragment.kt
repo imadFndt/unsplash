@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
@@ -21,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.fndt.unsplash.R
 import com.fndt.unsplash.adapters.SearchListAdapter
 import com.fndt.unsplash.databinding.SearchFragmentBinding
+import com.fndt.unsplash.model.NetworkStatus
 import com.fndt.unsplash.util.UnsplashApplication
 import com.fndt.unsplash.viewmodels.MainActivityViewModel
 import com.fndt.unsplash.viewmodels.SearchFragmentViewModel
@@ -32,6 +34,8 @@ class SearchFragment : Fragment() {
         (requireActivity().application as UnsplashApplication).component.getSearchFragmentModelFactory()
     }
     private val activityViewModel: MainActivityViewModel by activityViewModels()
+
+    private var isToastDisplayed = false
 
     private val searchTextWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
@@ -55,31 +59,7 @@ class SearchFragment : Fragment() {
         val adapter = SearchListAdapter()
         adapter.itemClickListener = { activityViewModel.selectItem(it) }
 
-        binding.recyclerList.adapter = adapter
-        binding.recyclerList.layoutManager = GridLayoutManager(context, 3, GridLayoutManager.VERTICAL, false)
-        with(DividerItemDecoration(context, DividerItemDecoration.HORIZONTAL)) {
-            setDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.divider)!!)
-            binding.recyclerList.addItemDecoration(this)
-        }
-        with(DividerItemDecoration(context, DividerItemDecoration.VERTICAL)) {
-            setDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.divider)!!)
-            binding.recyclerList.addItemDecoration(this)
-        }
-        binding.recyclerList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                when (newState) {
-                    RecyclerView.SCROLL_STATE_IDLE -> Log.d(
-                        "SearchListScrollState", "The RecyclerView is not scrolling"
-                    )
-                    RecyclerView.SCROLL_STATE_DRAGGING -> {
-                        binding.searchTextLayout.clearFocus()
-                        Log.e("a", "Scrolling now")
-                        hideKeyboard()
-                    }
-                    RecyclerView.SCROLL_STATE_SETTLING -> Log.d("SearchListScrollState", "Scroll Settling")
-                }
-            }
-        })
+        setupRecyclerView(adapter)
 
         binding.searchEditText.setText(viewModel.currentSearchText.value)
         binding.searchEditText.addTextChangedListener(searchTextWatcher)
@@ -94,7 +74,7 @@ class SearchFragment : Fragment() {
         }
 
         viewModel.currentSearchText.observe(viewLifecycleOwner) {
-            if (it.isNotEmpty()) viewModel.requestSearch(it, 1)
+            viewModel.requestSearch(it, 1)
         }
 
         viewModel.photos.observe(viewLifecycleOwner) { result ->
@@ -103,10 +83,51 @@ class SearchFragment : Fragment() {
             } ?: run {
                 resources.getText(R.string.searched_pictures_will_be_shown_here)
             }
-            binding.messageTextView.isVisible = result.results.isEmpty() || result == null
+            binding.recyclerList.isVisible = result != null
+            binding.messageTextView.isVisible = result == null || result.results.isEmpty()
             result ?: return@observe
             adapter.setItems(result)
         }
+        viewModel.networkStatus.observe(viewLifecycleOwner) { status ->
+            when (status) {
+                NetworkStatus.FAILURE -> {
+                    if (!isToastDisplayed) {
+                        Toast.makeText(context, R.string.bad_network, Toast.LENGTH_SHORT).show()
+                        isToastDisplayed = true
+                    }
+                }
+                NetworkStatus.SUCCESS -> {
+                    isToastDisplayed = false
+                }
+            }
+        }
+    }
+
+    private fun setupRecyclerView(adapter: SearchListAdapter) {
+        binding.recyclerList.adapter = adapter
+        binding.recyclerList.layoutManager = GridLayoutManager(context, 3, GridLayoutManager.VERTICAL, false)
+        with(DividerItemDecoration(context, DividerItemDecoration.HORIZONTAL)) {
+            setDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.divider)!!)
+            binding.recyclerList.addItemDecoration(this)
+        }
+        with(DividerItemDecoration(context, DividerItemDecoration.VERTICAL)) {
+            setDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.divider)!!)
+            binding.recyclerList.addItemDecoration(this)
+        }
+        binding.recyclerList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                when (newState) {
+                    RecyclerView.SCROLL_STATE_IDLE -> {
+                        Log.d("SearchListScrollState", "The RecyclerView is not scrolling")
+                    }
+                    RecyclerView.SCROLL_STATE_DRAGGING -> {
+                        binding.searchTextLayout.clearFocus()
+                        hideKeyboard()
+                    }
+                    RecyclerView.SCROLL_STATE_SETTLING -> Log.d("SearchListScrollState", "Scroll Settling")
+                }
+            }
+        })
     }
 
     override fun onDestroyView() {

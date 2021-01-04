@@ -1,6 +1,5 @@
 package com.fndt.unsplash.model
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.fndt.unsplash.remote.UnsplashService
@@ -13,51 +12,40 @@ import javax.inject.Singleton
 class UnsplashRepository @Inject constructor(private val unsplashService: UnsplashService) {
     val randomPhoto: LiveData<UnsplashPhoto> get() = randomPhotoData
     val searchList: LiveData<UnsplashSearchResult> get() = searchListData
+    val networkStatus: LiveData<NetworkStatus> get() = networkStatusData
 
+    private val networkStatusData = MutableLiveData(NetworkStatus.SUCCESS)
     private val randomPhotoData = MutableLiveData<UnsplashPhoto>()
     private val searchListData = MutableLiveData<UnsplashSearchResult>()
 
     suspend fun requestRandomPhoto() = withContext(Dispatchers.IO) {
+        networkStatusData.postValue(NetworkStatus.PENDING)
         try {
             randomPhotoData.postValue(unsplashService.getRandom())
+            networkStatusData.postValue(NetworkStatus.SUCCESS)
         } catch (e: Exception) {
-            //TODO
+            networkStatusData.postValue(NetworkStatus.FAILURE)
         }
     }
 
     suspend fun requestSearch(query: String, page: Int) = withContext(Dispatchers.IO) {
+        if (query.isEmpty()) {
+            searchListData.postValue(null)
+            return@withContext
+        }
         try {
+            networkStatusData.postValue(NetworkStatus.PENDING)
             val map = mutableMapOf<String, String>().apply {
                 put("query", query)
                 put("per_page", PER_PAGE.toString())
                 put("page", page.toString())
             }
             val list = unsplashService.getList(map)
-            list.pagesLoaded += 1
+            //list.pagesLoaded += 1
             searchListData.postValue(list)
+            networkStatusData.postValue(NetworkStatus.SUCCESS)
         } catch (e: Exception) {
-            Log.e("TODO", "TODO")
-            //TODO
-        }
-    }
-
-    suspend fun requestAdd(searchQuery: String) = withContext(Dispatchers.IO) {
-        try {
-            val currentValue = searchList.value
-            val map = mutableMapOf<String, String>().apply {
-                put("query", searchQuery)
-                put("per_page", PER_PAGE.toString())
-                currentValue?.let { put("page", (it.pagesLoaded + 1).toString()) }
-            }
-            currentValue?.let { value ->
-                val list = unsplashService.getList(map).results
-                value.results.addAll(list)
-                value.pagesLoaded += 1
-                searchListData.postValue(value)
-            }
-        } catch (e: Exception) {
-            Log.e("TODO", "TODO")
-            //TODO
+            networkStatusData.postValue(NetworkStatus.FAILURE)
         }
     }
 }

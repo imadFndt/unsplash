@@ -3,6 +3,7 @@ package com.fndt.unsplash.adapters
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
@@ -11,6 +12,7 @@ import com.fndt.unsplash.databinding.ImageItemBinding
 import com.fndt.unsplash.model.UnsplashPhoto
 import com.fndt.unsplash.model.UnsplashSearchResult
 import com.fndt.unsplash.util.SearchDiffUtilCallback
+import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
 class SearchListAdapter : RecyclerView.Adapter<SearchListAdapter.SearchListViewHolder>() {
@@ -27,15 +29,24 @@ class SearchListAdapter : RecyclerView.Adapter<SearchListAdapter.SearchListViewH
             val pos = holder.adapterPosition
             if (pos != RecyclerView.NO_POSITION) itemClickListener?.invoke(items[pos])
         }
+        holder.binding.badNetworkText.isVisible = false
         return holder
     }
 
     override fun onBindViewHolder(holder: SearchListViewHolder, position: Int) {
-        Picasso.get().load(items[position]?.urls?.small)
+        Picasso.get().load(items[position].urls.small)
             .placeholder(circularDrawable(holder.binding.itemImage.context))
             .fit()
             .centerCrop()
-            .into(holder.binding.itemImage)
+            .into(holder.binding.itemImage, object : Callback {
+                override fun onSuccess() {
+                    holder.binding.badNetworkText.isVisible = false
+                }
+
+                override fun onError(e: Exception?) {
+                    holder.binding.badNetworkText.isVisible = true
+                }
+            })
     }
 
     override fun getItemCount() = items.size
