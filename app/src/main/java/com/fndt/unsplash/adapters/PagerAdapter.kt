@@ -32,23 +32,25 @@ class PagerAdapter : RecyclerView.Adapter<PagerAdapter.PagerViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: PagerViewHolder, position: Int) {
-        data.get(position)?.let { (holder.binding.recyclerList.adapter as SearchListAdapter?)?.setItems(it) }
+        data.get(position)?.let {
+            (holder.binding.recyclerList.adapter as SearchListAdapter?)?.setItems(it)
+        }
     }
 
     override fun getItemCount() = totalPages
 
     fun setData(newData: SparseArray<UnsplashSearchResult>) {
         totalPages = newData.valueAt(0).totalPages
-        val diff = DiffUtil.calculateDiff(PagerDiffUtilCallback(data, newData))
         data.clear()
         data.putAll(newData)
-        diff.dispatchUpdatesTo(this)
+        notifyDataSetChanged()
     }
 
     private fun setupRecyclerView(binding: ImagePageItemBinding, adapter: SearchListAdapter) {
         val context = binding.root.context
         binding.recyclerList.adapter = adapter
-        binding.recyclerList.layoutManager = GridLayoutManager(context, 3, GridLayoutManager.VERTICAL, false)
+        binding.recyclerList.layoutManager =
+            GridLayoutManager(context, 3, GridLayoutManager.VERTICAL, false)
         with(DividerItemDecoration(context, DividerItemDecoration.HORIZONTAL)) {
             setDrawable(ContextCompat.getDrawable(context, R.drawable.divider)!!)
             binding.recyclerList.addItemDecoration(this)
@@ -68,26 +70,14 @@ class PagerAdapter : RecyclerView.Adapter<PagerAdapter.PagerViewHolder>() {
 //                        binding.searchTextLayout.clearFocus()
 //                        hideKeyboard()
                     }
-                    RecyclerView.SCROLL_STATE_SETTLING -> Log.d("SearchListScrollState", "Scroll Settling")
+                    RecyclerView.SCROLL_STATE_SETTLING -> Log.d(
+                        "SearchListScrollState",
+                        "Scroll Settling"
+                    )
                 }
             }
         })
     }
 
     class PagerViewHolder(val binding: ImagePageItemBinding) : RecyclerView.ViewHolder(binding.root)
-
-    class PagerDiffUtilCallback(
-        private val list1: SparseArray<UnsplashSearchResult>,
-        private val list2: SparseArray<UnsplashSearchResult>
-    ) : DiffUtil.Callback() {
-        override fun getOldListSize() = list1.size()
-        override fun getNewListSize() = list2.size()
-        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) =
-            list1[oldItemPosition] == list2[newItemPosition]
-
-        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int) =
-            list1.get(oldItemPosition)?.results == list2.get(newItemPosition)?.results
-
-
-    }
 }

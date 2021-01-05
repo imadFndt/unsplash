@@ -11,7 +11,7 @@ import javax.inject.Singleton
 @Singleton
 class UnsplashRepository @Inject constructor(private val unsplashService: UnsplashService) {
     val randomPhoto: LiveData<UnsplashPhoto> get() = randomPhotoData
-    val searchList: LiveData<MutableList<UnsplashSearchResult>> get() = searchListData
+    val searchList: LiveData<MutableList<UnsplashSearchResult>?> get() = searchListData
     val networkStatus: LiveData<NetworkStatus> get() = networkStatusData
 
     private val randomPhotoData = MutableLiveData<UnsplashPhoto>()

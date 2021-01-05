@@ -10,12 +10,15 @@ import kotlinx.coroutines.launch
 
 class SearchFragmentViewModel(private val repository: UnsplashRepository) : ViewModel() {
     val photos: LiveData<SparseArray<UnsplashSearchResult>> = repository.searchList.switchMap { list ->
+        list ?: return@switchMap MutableLiveData()
         val sparseArray = SparseArray<UnsplashSearchResult>()
         list.forEach { sparseArray.append(it.page, it) }
         MutableLiveData(sparseArray)
     }
     val networkStatus: LiveData<NetworkStatus> = repository.networkStatus
     val currentSearchText: LiveData<String> get() = currentSearchTextData
+    var currentSearchPage: Int = NO_PAGE
+
 
     private val currentSearchTextData = MutableLiveData<String>()
 
@@ -40,13 +43,11 @@ class SearchFragmentViewModel(private val repository: UnsplashRepository) : View
         }
     }
 
-    fun setImageStatus(status: NetworkStatus) {
-        imageNetworkStatus.value = status
-    }
-
     class Factory(private val repository: UnsplashRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             return SearchFragmentViewModel(repository) as T
         }
     }
 }
+
+const val NO_PAGE = -1

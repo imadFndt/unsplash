@@ -44,6 +44,7 @@ class SearchFragment : Fragment() {
     }
     private val pagerCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
+            viewModel.currentSearchPage = position
             viewModel.photos.value?.get(position)?.let { return }
             viewModel.currentSearchText.value?.let { viewModel.requestSearch(it, position) }
         }
@@ -64,10 +65,10 @@ class SearchFragment : Fragment() {
         val adapter = PagerAdapter()
         adapter.onListItemClickListener = { activityViewModel.selectItem(it) }
         binding.searchPager.adapter = adapter
-        binding.searchPager.registerOnPageChangeCallback(pagerCallback)
         TabLayoutMediator(binding.tabs, binding.searchPager) { tab, index ->
             tab.text = (index + 1).toString()
         }.attach()
+        binding.searchPager.registerOnPageChangeCallback(pagerCallback)
 
         binding.searchEditText.setText(viewModel.currentSearchText.value)
         binding.searchEditText.addTextChangedListener(searchTextWatcher)
@@ -95,6 +96,9 @@ class SearchFragment : Fragment() {
             binding.messageTextView.isVisible = result == null || result.isEmpty()
             result ?: return@observe
             adapter.setData(result)
+            if (binding.searchPager.currentItem != viewModel.currentSearchPage) {
+                binding.searchPager.currentItem = viewModel.currentSearchPage
+            }
         }
         viewModel.networkStatus.observe(viewLifecycleOwner) { status ->
             when (status) {
