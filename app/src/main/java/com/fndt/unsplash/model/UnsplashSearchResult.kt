@@ -8,5 +8,5 @@ data class UnsplashSearchResult(
     var totalPages: Int,
     var results: MutableList<UnsplashPhoto>,
 ) {
-    var pagesLoaded: Int = 0
+    var page: Int = 0
 }

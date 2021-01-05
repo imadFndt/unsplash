@@ -1,5 +1,6 @@
 package com.fndt.unsplash.viewmodels
 
+import android.util.SparseArray
 import androidx.lifecycle.*
 import com.fndt.unsplash.model.NetworkStatus
 import com.fndt.unsplash.model.UnsplashRepository
@@ -8,14 +9,18 @@ import com.fndt.unsplash.util.combineStatus
 import kotlinx.coroutines.launch
 
 class SearchFragmentViewModel(private val repository: UnsplashRepository) : ViewModel() {
-    val photos: LiveData<UnsplashSearchResult> = repository.searchList
+    val photos: LiveData<SparseArray<UnsplashSearchResult>> = repository.searchList.switchMap { list ->
+        val sparseArray = SparseArray<UnsplashSearchResult>()
+        list.forEach { sparseArray.append(it.page, it) }
+        MutableLiveData(sparseArray)
+    }
     val networkStatus: LiveData<NetworkStatus> = repository.networkStatus
     val currentSearchText: LiveData<String> get() = currentSearchTextData
 
     private val currentSearchTextData = MutableLiveData<String>()
 
     fun requestSearch(query: String, page: Int) {
-        viewModelScope.launch { repository.requestSearch(query, page) }
+        viewModelScope.launch { repository.requestSearch(query, page, page == 0) }
     }
 
     fun setText(string: String) {

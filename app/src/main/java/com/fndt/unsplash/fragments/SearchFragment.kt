@@ -3,29 +3,27 @@ package com.fndt.unsplash.fragments
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+import androidx.core.util.isEmpty
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
 import com.fndt.unsplash.R
-import com.fndt.unsplash.adapters.SearchListAdapter
+import com.fndt.unsplash.adapters.PagerAdapter
 import com.fndt.unsplash.databinding.SearchFragmentBinding
 import com.fndt.unsplash.model.NetworkStatus
 import com.fndt.unsplash.util.UnsplashApplication
 import com.fndt.unsplash.viewmodels.MainActivityViewModel
 import com.fndt.unsplash.viewmodels.SearchFragmentViewModel
+import com.google.android.material.tabs.TabLayoutMediator
 
 
 class SearchFragment : Fragment() {
@@ -44,6 +42,12 @@ class SearchFragment : Fragment() {
             viewModel.setText(s.toString())
         }
     }
+    private val pagerCallback = object : ViewPager2.OnPageChangeCallback() {
+        override fun onPageSelected(position: Int) {
+            viewModel.photos.value?.get(position)?.let { return }
+            viewModel.currentSearchText.value?.let { viewModel.requestSearch(it, position) }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,10 +60,14 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val adapter = SearchListAdapter()
-        adapter.itemClickListener = { activityViewModel.selectItem(it) }
 
-        setupRecyclerView(adapter)
+        val adapter = PagerAdapter()
+        adapter.onListItemClickListener = { activityViewModel.selectItem(it) }
+        binding.searchPager.adapter = adapter
+        binding.searchPager.registerOnPageChangeCallback(pagerCallback)
+        TabLayoutMediator(binding.tabs, binding.searchPager) { tab, index ->
+            tab.text = (index + 1).toString()
+        }.attach()
 
         binding.searchEditText.setText(viewModel.currentSearchText.value)
         binding.searchEditText.addTextChangedListener(searchTextWatcher)
@@ -74,7 +82,7 @@ class SearchFragment : Fragment() {
         }
 
         viewModel.currentSearchText.observe(viewLifecycleOwner) {
-            viewModel.requestSearch(it, 1)
+            viewModel.requestSearch(it, 0)
         }
 
         viewModel.photos.observe(viewLifecycleOwner) { result ->
@@ -83,10 +91,10 @@ class SearchFragment : Fragment() {
             } ?: run {
                 resources.getText(R.string.searched_pictures_will_be_shown_here)
             }
-            binding.recyclerList.isVisible = result != null
-            binding.messageTextView.isVisible = result == null || result.results.isEmpty()
+            binding.searchPager.isVisible = result != null
+            binding.messageTextView.isVisible = result == null || result.isEmpty()
             result ?: return@observe
-            adapter.setItems(result)
+            adapter.setData(result)
         }
         viewModel.networkStatus.observe(viewLifecycleOwner) { status ->
             when (status) {
@@ -103,35 +111,9 @@ class SearchFragment : Fragment() {
         }
     }
 
-    private fun setupRecyclerView(adapter: SearchListAdapter) {
-        binding.recyclerList.adapter = adapter
-        binding.recyclerList.layoutManager = GridLayoutManager(context, 3, GridLayoutManager.VERTICAL, false)
-        with(DividerItemDecoration(context, DividerItemDecoration.HORIZONTAL)) {
-            setDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.divider)!!)
-            binding.recyclerList.addItemDecoration(this)
-        }
-        with(DividerItemDecoration(context, DividerItemDecoration.VERTICAL)) {
-            setDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.divider)!!)
-            binding.recyclerList.addItemDecoration(this)
-        }
-        binding.recyclerList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                when (newState) {
-                    RecyclerView.SCROLL_STATE_IDLE -> {
-                        Log.d("SearchListScrollState", "The RecyclerView is not scrolling")
-                    }
-                    RecyclerView.SCROLL_STATE_DRAGGING -> {
-                        binding.searchTextLayout.clearFocus()
-                        hideKeyboard()
-                    }
-                    RecyclerView.SCROLL_STATE_SETTLING -> Log.d("SearchListScrollState", "Scroll Settling")
-                }
-            }
-        })
-    }
-
     override fun onDestroyView() {
         binding.searchEditText.removeTextChangedListener(searchTextWatcher)
+        binding.searchPager.unregisterOnPageChangeCallback(pagerCallback)
         super.onDestroyView()
     }
 
