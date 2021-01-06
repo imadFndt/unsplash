@@ -1,12 +1,10 @@
 package com.fndt.unsplash.adapters
 
-import android.util.Log
 import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.util.putAll
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -61,20 +59,7 @@ class PagerAdapter : RecyclerView.Adapter<PagerAdapter.PagerViewHolder>() {
         }
         binding.recyclerList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                when (newState) {
-                    RecyclerView.SCROLL_STATE_IDLE -> {
-                        Log.d("SearchListScrollState", "The RecyclerView is not scrolling")
-                    }
-                    RecyclerView.SCROLL_STATE_DRAGGING -> {
-                        onListScrollListener?.invoke()
-//                        binding.searchTextLayout.clearFocus()
-//                        hideKeyboard()
-                    }
-                    RecyclerView.SCROLL_STATE_SETTLING -> Log.d(
-                        "SearchListScrollState",
-                        "Scroll Settling"
-                    )
-                }
+                if (newState == RecyclerView.SCROLL_STATE_DRAGGING) onListScrollListener?.invoke()
             }
         })
     }

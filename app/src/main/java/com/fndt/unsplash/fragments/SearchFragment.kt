@@ -10,7 +10,6 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.content.getSystemService
-import androidx.core.util.isEmpty
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -18,6 +17,7 @@ import androidx.fragment.app.viewModels
 import androidx.viewpager2.widget.ViewPager2
 import com.fndt.unsplash.R
 import com.fndt.unsplash.adapters.PagerAdapter
+import com.fndt.unsplash.adapters.SearchListAdapter
 import com.fndt.unsplash.databinding.SearchFragmentBinding
 import com.fndt.unsplash.model.NetworkStatus
 import com.fndt.unsplash.util.UnsplashApplication
@@ -45,8 +45,7 @@ class SearchFragment : Fragment() {
     private val pagerCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
             viewModel.currentSearchPage = position
-            viewModel.photos.value?.get(position)?.let { return }
-            viewModel.currentSearchText.value?.let { viewModel.requestSearch(it, position) }
+            viewModel.loadIfAbsent(position)
         }
     }
 
@@ -61,9 +60,11 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.placeholder.setImageDrawable(SearchListAdapter.circularDrawable(requireContext()))
 
         val adapter = PagerAdapter()
         adapter.onListItemClickListener = { activityViewModel.selectItem(it) }
+        adapter.onListScrollListener = { hideKeyboardAndClearTextFocus() }
         binding.searchPager.adapter = adapter
         TabLayoutMediator(binding.tabs, binding.searchPager) { tab, index ->
             tab.text = (index + 1).toString()
@@ -75,42 +76,22 @@ class SearchFragment : Fragment() {
         binding.searchEditText.setOnEditorActionListener { _, actionId, event ->
             viewModel.setText(binding.searchEditText.text.toString())
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                binding.searchTextLayout.clearFocus()
-                hideKeyboard()
+                hideKeyboardAndClearTextFocus()
                 return@setOnEditorActionListener true
             }
             return@setOnEditorActionListener false
         }
 
-        viewModel.currentSearchText.observe(viewLifecycleOwner) {
-            viewModel.requestSearch(it, 0)
-        }
-
-        viewModel.photos.observe(viewLifecycleOwner) { result ->
-            binding.messageTextView.text = result?.let {
-                resources.getText(R.string.nothing_found)
-            } ?: run {
-                resources.getText(R.string.searched_pictures_will_be_shown_here)
-            }
-            binding.searchPager.isVisible = result != null
-            binding.messageTextView.isVisible = result == null || result.isEmpty()
-            result ?: return@observe
-            adapter.setData(result)
+        viewModel.currentStatus.observe(viewLifecycleOwner) { status ->
+            binding.searchPager.isVisible = status.pages != null
+            binding.tabs.isVisible = status.pages != null
+            binding.messageTextView.isVisible =
+                status.pages == null && status.networkStatus != NetworkStatus.PENDING
+            binding.placeholder.isVisible = status.networkStatus == NetworkStatus.PENDING
+            if (status.networkStatus == NetworkStatus.SUCCESS && status.pages != null) adapter.setData(status.pages)
+            status.networkStatus?.let { updateTextAndToastMessages(it) }
             if (binding.searchPager.currentItem != viewModel.currentSearchPage) {
                 binding.searchPager.currentItem = viewModel.currentSearchPage
-            }
-        }
-        viewModel.networkStatus.observe(viewLifecycleOwner) { status ->
-            when (status) {
-                NetworkStatus.FAILURE -> {
-                    if (!isToastDisplayed) {
-                        Toast.makeText(context, R.string.bad_network, Toast.LENGTH_SHORT).show()
-                        isToastDisplayed = true
-                    }
-                }
-                NetworkStatus.SUCCESS -> {
-                    isToastDisplayed = false
-                }
             }
         }
     }
@@ -121,7 +102,32 @@ class SearchFragment : Fragment() {
         super.onDestroyView()
     }
 
-    private fun hideKeyboard() {
+    private fun updateTextAndToastMessages(status: NetworkStatus) {
+        when (status) {
+            NetworkStatus.FAILURE -> {
+                if (!isToastDisplayed) {
+                    Toast.makeText(context, R.string.bad_network, Toast.LENGTH_SHORT).show()
+                    isToastDisplayed = true
+                }
+                binding.messageTextView.text = resources.getText(R.string.bad_network)
+            }
+            NetworkStatus.SUCCESS_NOTHING_FOUND -> {
+                isToastDisplayed = false
+                binding.messageTextView.text = resources.getText(R.string.nothing_found)
+            }
+            NetworkStatus.SUCCESS -> {
+                isToastDisplayed = false
+                binding.messageTextView.text =
+                    resources.getText(R.string.searched_pictures_will_be_shown_here)
+            }
+            NetworkStatus.PENDING -> {
+                isToastDisplayed = false
+            }
+        }
+    }
+
+    private fun hideKeyboardAndClearTextFocus() {
+        binding.searchTextLayout.clearFocus()
         val imm: InputMethodManager? = context?.getSystemService()
         imm?.hideSoftInputFromWindow(view?.windowToken, 0)
     }

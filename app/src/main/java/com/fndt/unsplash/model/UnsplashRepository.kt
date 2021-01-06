@@ -3,6 +3,7 @@ package com.fndt.unsplash.model
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.fndt.unsplash.remote.UnsplashService
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -31,6 +32,7 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
     suspend fun requestSearch(query: String, page: Int, reset: Boolean) = withContext(Dispatchers.IO) {
         if (query.isEmpty()) {
             searchListData.postValue(null)
+            networkStatusData.postValue(NetworkStatus.SUCCESS)
             return@withContext
         }
         try {
@@ -42,13 +44,16 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
             }
             val result = unsplashService.getList(map)
             result.page = page
+            val resultEmpty = result.totalPages == 0
             if (reset) {
-                searchListData.postValue(mutableListOf(result))
+                searchListData.postValue(if (!resultEmpty) mutableListOf(result) else null)
             } else {
                 val updated = searchListData.value
                 updated?.add(result)
                 searchListData.postValue(updated)
             }
+            networkStatusData.postValue(if (resultEmpty) NetworkStatus.SUCCESS_NOTHING_FOUND else NetworkStatus.SUCCESS)
+        } catch (e: CancellationException) {
             networkStatusData.postValue(NetworkStatus.SUCCESS)
         } catch (e: Exception) {
             networkStatusData.postValue(NetworkStatus.FAILURE)
