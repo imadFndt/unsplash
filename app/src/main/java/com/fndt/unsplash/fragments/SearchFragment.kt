@@ -24,7 +24,6 @@ import com.fndt.unsplash.viewmodels.MainActivityViewModel
 import com.fndt.unsplash.viewmodels.SearchFragmentViewModel
 import com.google.android.material.tabs.TabLayoutMediator
 
-
 class SearchFragment : Fragment() {
     private lateinit var binding: SearchFragmentBinding
     private val viewModel: SearchFragmentViewModel by viewModels {
@@ -49,7 +48,7 @@ class SearchFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = SearchFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }

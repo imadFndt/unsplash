@@ -11,7 +11,7 @@ import com.fndt.unsplash.R
 import com.fndt.unsplash.databinding.ImageItemBinding
 import com.fndt.unsplash.model.ListPage
 import com.fndt.unsplash.model.UnsplashPhoto
-import com.fndt.unsplash.util.SearchDiffUtilCallback
+import com.fndt.unsplash.util.UnsplashDiffUtilCallback
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
@@ -53,7 +53,7 @@ class ImageListAdapter : RecyclerView.Adapter<ImageListAdapter.ImageListViewHold
 
     fun setItems(newItems: ListPage) {
         newItems.items?.let {
-            val diff = DiffUtil.calculateDiff(SearchDiffUtilCallback(items, it))
+            val diff = DiffUtil.calculateDiff(UnsplashDiffUtilCallback(items, it))
             items.clear()
             items.addAll(it)
             diff.dispatchUpdatesTo(this)

@@ -14,23 +14,23 @@ import javax.inject.Singleton
 @Singleton
 class UnsplashRepository @Inject constructor(private val unsplashService: UnsplashService) {
     val randomPhoto: LiveData<UnsplashPhoto> get() = randomPhotoData
-    val collections: LiveData<MutableList<UnsplashCollection>> get() = collectionsListData
-    val networkStatus: LiveData<NetworkStatus> get() = randomPhotoNetworkStatusData
+    val collections: LiveData<List<UnsplashCollection>> get() = collectionsListData
+    val networkStatus: LiveData<NetworkStatus> get() = networkStatusData
     val search: LiveData<SearchProcess> get() = searchData
 
     private val randomPhotoData = MutableLiveData<UnsplashPhoto>()
-    private val randomPhotoNetworkStatusData = MutableLiveData(NetworkStatus.SUCCESS)
+    private val networkStatusData = MutableLiveData(NetworkStatus.SUCCESS)
 
-    private val collectionsListData = MutableLiveData<MutableList<UnsplashCollection>>()
+    private val collectionsListData = MutableLiveData<List<UnsplashCollection>>()
     private val searchData = MutableLiveData<SearchProcess>()
 
     suspend fun requestRandomPhoto() = withContext(Dispatchers.IO) {
-        randomPhotoNetworkStatusData.postValue(NetworkStatus.PENDING)
+        networkStatusData.postValue(NetworkStatus.PENDING)
         try {
             randomPhotoData.postValue(unsplashService.getRandom())
-            randomPhotoNetworkStatusData.postValue(NetworkStatus.SUCCESS)
+            networkStatusData.postValue(NetworkStatus.SUCCESS)
         } catch (e: Exception) {
-            randomPhotoNetworkStatusData.postValue(NetworkStatus.FAILURE)
+            networkStatusData.postValue(NetworkStatus.FAILURE)
         }
     }
 
@@ -48,7 +48,8 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
             }
             else -> {
                 pageList = (searchData.value as SearchProcess.Running).pages
-                totalPages = (searchData.value as SearchProcess.Running).totalPages
+                totalPages =
+                    (searchData.value as SearchProcess.Running).totalPages
             }
         }
         try {
@@ -86,31 +87,32 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
         return unsplashService.getSearchList(map)
     }
 
+    private suspend fun getCollections(page: Int): List<UnsplashCollection> {
+        val map = mutableMapOf<String, String>().apply {
+            put("page", (page + 1).toString())
+        }
+        return unsplashService.getCollectionsList(map)
+    }
+
     suspend fun requestCollections(page: Int, reset: Boolean) = withContext(Dispatchers.IO) {
         try {
-            randomPhotoNetworkStatusData.postValue(NetworkStatus.PENDING)
-            val map = mutableMapOf<String, String>().apply {
-                put("page", (page + 1).toString())
-            }
-            val result = unsplashService.getCollectionsList(map)
-
-            if (reset) {
-                collectionsListData.postValue(result.toMutableList())
-            } else {
-                val updated = collectionsListData.value
-                updated?.addAll(result)
-                collectionsListData.postValue(updated)
-            }
-            randomPhotoNetworkStatusData.postValue(NetworkStatus.SUCCESS)
+            if (!reset) networkStatusData.postValue(NetworkStatus.PENDING)
+            val list = getCollections(page)
+            val result = mutableListOf<UnsplashCollection>()
+            if (!reset) collectionsListData.value?.let { result.addAll(it) }
+            result.addAll(list)
+            collectionsListData.postValue(result)
         } catch (e: CancellationException) {
-            randomPhotoNetworkStatusData.postValue(NetworkStatus.SUCCESS)
+            networkStatusData.postValue(NetworkStatus.SUCCESS)
         } catch (e: Exception) {
-            randomPhotoNetworkStatusData.postValue(NetworkStatus.FAILURE)
+            networkStatusData.postValue(NetworkStatus.FAILURE)
         }
     }
 
     sealed class SearchProcess {
-        data class Running(val pages: SparseArray<ListPage?>, val totalPages: Int?) : SearchProcess()
+        data class Running(val pages: SparseArray<ListPage?>, val totalPages: Int?) :
+            SearchProcess()
+
         object NothingFound : SearchProcess()
         object Failure : SearchProcess()
         object Idle : SearchProcess()

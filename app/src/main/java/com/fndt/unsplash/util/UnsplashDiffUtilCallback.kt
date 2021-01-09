@@ -1,11 +1,12 @@
 package com.fndt.unsplash.util
 
 import androidx.recyclerview.widget.DiffUtil
+import com.fndt.unsplash.model.UnsplashItems
 import com.fndt.unsplash.model.UnsplashPhoto
 
-class SearchDiffUtilCallback(
-    private val oldList: List<UnsplashPhoto>,
-    private val newList: List<UnsplashPhoto>
+class UnsplashDiffUtilCallback(
+    private val oldList: List<UnsplashItems>,
+    private val newList: List<UnsplashItems>
 ) : DiffUtil.Callback() {
 
     override fun getOldListSize() = oldList.size

@@ -1,7 +1,12 @@
 package com.fndt.unsplash.model
 
+import com.google.gson.annotations.SerializedName
+
 data class UnsplashCollection(
-    val id : Int,
+    override var id: String,
     val title: String,
-    val total_photos: Int
-)
+    @SerializedName("total_photos")
+    val totalPhotos: Int,
+    @SerializedName("cover_photo")
+    val coverPhoto: UnsplashPhoto
+) : UnsplashItems
