@@ -8,7 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import com.fndt.unsplash.adapters.SearchListAdapter
+import com.fndt.unsplash.adapters.ImageListAdapter
 import com.fndt.unsplash.databinding.ImageFragmentBinding
 import com.fndt.unsplash.model.NetworkStatus
 import com.fndt.unsplash.util.UnsplashApplication
@@ -37,7 +37,7 @@ class RandomImageFragment : Fragment() {
         viewModel.randomImage.observe(viewLifecycleOwner) { image ->
             image?.let { imageDescriptionViewModel.setImage(image) }
         }
-        binding.placeholder.setImageDrawable(SearchListAdapter.circularDrawable(requireContext()))
+        binding.placeholder.setImageDrawable(ImageListAdapter.circularDrawable(requireContext()))
         viewModel.networkStatus.observe(viewLifecycleOwner) { status ->
             binding.placeholder.isVisible = status == NetworkStatus.PENDING
             binding.descriptionFragment.isVisible = status == NetworkStatus.SUCCESS

@@ -5,5 +5,8 @@
     app:startDestination="@id/collection_list">
     <fragment
         android:id="@+id/collection_list"
-        android:name="com.fndt.unsplash.fragments.ImageDescriptionFragment" />
+        android:name="com.fndt.unsplash.fragments.CollectionsFragment" />
+    <fragment
+        android:id="@+id/detailed_collection"
+        android:name="com.fndt.unsplash.fragments.SearchImageSelectedFragment"/>
 </navigation>

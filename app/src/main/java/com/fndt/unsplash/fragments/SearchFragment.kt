@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -16,10 +15,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.viewpager2.widget.ViewPager2
 import com.fndt.unsplash.R
+import com.fndt.unsplash.adapters.ImageListAdapter
 import com.fndt.unsplash.adapters.PagerAdapter
-import com.fndt.unsplash.adapters.SearchListAdapter
 import com.fndt.unsplash.databinding.SearchFragmentBinding
-import com.fndt.unsplash.model.NetworkStatus
+import com.fndt.unsplash.model.UnsplashRepository.SearchProcess
 import com.fndt.unsplash.util.UnsplashApplication
 import com.fndt.unsplash.viewmodels.MainActivityViewModel
 import com.fndt.unsplash.viewmodels.SearchFragmentViewModel
@@ -33,8 +32,6 @@ class SearchFragment : Fragment() {
     }
     private val activityViewModel: MainActivityViewModel by activityViewModels()
 
-    private var isToastDisplayed = false
-
     private val searchTextWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
@@ -45,7 +42,6 @@ class SearchFragment : Fragment() {
     private val pagerCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
             viewModel.currentSearchPage = position
-            viewModel.loadIfAbsent(position)
         }
     }
 
@@ -60,16 +56,17 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.placeholder.setImageDrawable(SearchListAdapter.circularDrawable(requireContext()))
+        binding.recyclerLayout.placeholder.setImageDrawable(ImageListAdapter.circularDrawable(requireContext()))
 
         val adapter = PagerAdapter()
         adapter.onListItemClickListener = { activityViewModel.selectItem(it) }
         adapter.onListScrollListener = { hideKeyboardAndClearTextFocus() }
-        binding.searchPager.adapter = adapter
-        TabLayoutMediator(binding.tabs, binding.searchPager) { tab, index ->
+        adapter.onUpdatePageListener = { viewModel.loadIfAbsent(it) }
+        binding.recyclerLayout.searchPager.adapter = adapter
+        TabLayoutMediator(binding.recyclerLayout.tabs, binding.recyclerLayout.searchPager) { tab, index ->
             tab.text = (index + 1).toString()
         }.attach()
-        binding.searchPager.registerOnPageChangeCallback(pagerCallback)
+        binding.recyclerLayout.searchPager.registerOnPageChangeCallback(pagerCallback)
 
         binding.searchEditText.setText(viewModel.currentSearchText.value)
         binding.searchEditText.addTextChangedListener(searchTextWatcher)
@@ -81,50 +78,33 @@ class SearchFragment : Fragment() {
             }
             return@setOnEditorActionListener false
         }
-
-        viewModel.currentStatus.observe(viewLifecycleOwner) { status ->
-            binding.searchPager.isVisible = status.pages != null
-            binding.tabs.isVisible = status.pages != null
-            binding.messageTextView.isVisible =
-                status.pages == null && status.networkStatus != NetworkStatus.PENDING
-            binding.placeholder.isVisible = status.networkStatus == NetworkStatus.PENDING
-            if (status.networkStatus == NetworkStatus.SUCCESS && status.pages != null) adapter.setData(status.pages)
-            status.networkStatus?.let { updateTextAndToastMessages(it) }
-            if (binding.searchPager.currentItem != viewModel.currentSearchPage) {
-                binding.searchPager.currentItem = viewModel.currentSearchPage
+        viewModel.search.observe(viewLifecycleOwner) { status ->
+            updateTextMessage(status)
+            binding.recyclerLayout.searchPager.isVisible = status is SearchProcess.Running && status.hasData()
+            binding.recyclerLayout.tabs.isVisible = status is SearchProcess.Running && status.hasData()
+            binding.recyclerLayout.messageTextView.isVisible = status !is SearchProcess.Running
+            binding.recyclerLayout.placeholder.isVisible = status.isFirstPageLoading()
+            if (status.hasData()) adapter.setData(status as SearchProcess.Running)
+            if (binding.recyclerLayout.searchPager.currentItem != viewModel.currentSearchPage) {
+                binding.recyclerLayout.searchPager.currentItem = viewModel.currentSearchPage
             }
         }
     }
 
     override fun onDestroyView() {
         binding.searchEditText.removeTextChangedListener(searchTextWatcher)
-        binding.searchPager.unregisterOnPageChangeCallback(pagerCallback)
+        binding.recyclerLayout.searchPager.unregisterOnPageChangeCallback(pagerCallback)
         super.onDestroyView()
     }
 
-    private fun updateTextAndToastMessages(status: NetworkStatus) {
-        when (status) {
-            NetworkStatus.FAILURE -> {
-                if (!isToastDisplayed) {
-                    Toast.makeText(context, R.string.bad_network, Toast.LENGTH_SHORT).show()
-                    isToastDisplayed = true
-                }
-                binding.messageTextView.text = resources.getText(R.string.bad_network)
-            }
-            NetworkStatus.SUCCESS_NOTHING_FOUND -> {
-                isToastDisplayed = false
-                binding.messageTextView.text = resources.getText(R.string.nothing_found)
-            }
-            NetworkStatus.SUCCESS -> {
-                isToastDisplayed = false
-                binding.messageTextView.text =
-                    resources.getText(R.string.searched_pictures_will_be_shown_here)
-            }
-            NetworkStatus.PENDING -> {
-                isToastDisplayed = false
-            }
+    private fun updateTextMessage(status: SearchProcess) {
+        binding.recyclerLayout.messageTextView.text = when (status) {
+            is SearchProcess.Idle, is SearchProcess.Running -> resources.getText(R.string.searched_pictures_will_be_shown_here)
+            is SearchProcess.NothingFound -> resources.getText(R.string.nothing_found)
+            is SearchProcess.Failure -> resources.getText(R.string.bad_network)
         }
     }
+
 
     private fun hideKeyboardAndClearTextFocus() {
         binding.searchTextLayout.clearFocus()
@@ -132,3 +112,4 @@ class SearchFragment : Fragment() {
         imm?.hideSoftInputFromWindow(view?.windowToken, 0)
     }
 }
+

@@ -9,20 +9,20 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.fndt.unsplash.R
 import com.fndt.unsplash.databinding.ImageItemBinding
+import com.fndt.unsplash.model.ListPage
 import com.fndt.unsplash.model.UnsplashPhoto
-import com.fndt.unsplash.model.UnsplashSearchResult
 import com.fndt.unsplash.util.SearchDiffUtilCallback
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
-class SearchListAdapter : RecyclerView.Adapter<SearchListAdapter.SearchListViewHolder>() {
+class ImageListAdapter : RecyclerView.Adapter<ImageListAdapter.ImageListViewHolder>() {
     private val items = mutableListOf<UnsplashPhoto>()
     var itemClickListener: ((UnsplashPhoto) -> Unit)? = null
 
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchListViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageListViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val holder = SearchListViewHolder(ImageItemBinding.inflate(inflater, parent, false)).apply {
+        val holder = ImageListViewHolder(ImageItemBinding.inflate(inflater, parent, false)).apply {
             binding.itemImage.layoutParams.height = parent.measuredWidth / 3
         }
         holder.binding.itemImage.setOnClickListener {
@@ -33,7 +33,7 @@ class SearchListAdapter : RecyclerView.Adapter<SearchListAdapter.SearchListViewH
         return holder
     }
 
-    override fun onBindViewHolder(holder: SearchListViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ImageListViewHolder, position: Int) {
         Picasso.get().load(items[position].urls.small)
             .placeholder(circularDrawable(holder.binding.itemImage.context))
             .fit()
@@ -51,15 +51,16 @@ class SearchListAdapter : RecyclerView.Adapter<SearchListAdapter.SearchListViewH
 
     override fun getItemCount() = items.size
 
-    fun setItems(newItems: UnsplashSearchResult) {
-        val diff =
-            DiffUtil.calculateDiff(SearchDiffUtilCallback(items, newItems.results))
-        items.clear()
-        items.addAll(newItems.results)
-        diff.dispatchUpdatesTo(this)
+    fun setItems(newItems: ListPage) {
+        newItems.items?.let {
+            val diff = DiffUtil.calculateDiff(SearchDiffUtilCallback(items, it))
+            items.clear()
+            items.addAll(it)
+            diff.dispatchUpdatesTo(this)
+        }
     }
 
-    class SearchListViewHolder(val binding: ImageItemBinding) : RecyclerView.ViewHolder(binding.root)
+    class ImageListViewHolder(val binding: ImageItemBinding) : RecyclerView.ViewHolder(binding.root)
 
     companion object {
         fun circularDrawable(context: Context) = CircularProgressDrawable(context).apply {

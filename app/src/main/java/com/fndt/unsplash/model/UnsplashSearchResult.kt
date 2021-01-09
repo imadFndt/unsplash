@@ -7,6 +7,4 @@ data class UnsplashSearchResult(
     @SerializedName("total_pages")
     var totalPages: Int,
     var results: MutableList<UnsplashPhoto>,
-) {
-    var page: Int = 0
-}
+)
