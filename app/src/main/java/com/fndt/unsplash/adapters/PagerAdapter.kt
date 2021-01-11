@@ -22,7 +22,7 @@ class PagerAdapter : RecyclerView.Adapter<PagerAdapter.PagerViewHolder>() {
     var onUpdatePageListener: ((page: Int) -> Unit)? = null
 
     private var totalPages = 0
-    private val data = SparseArray<ListPage?>()
+    private val data = SparseArray<ListPage<UnsplashPhoto>?>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PagerViewHolder {
         val inflater = LayoutInflater.from(parent.context)

@@ -51,7 +51,7 @@ class ImageListAdapter : RecyclerView.Adapter<ImageListAdapter.ImageListViewHold
 
     override fun getItemCount() = items.size
 
-    fun setItems(newItems: ListPage) {
+    fun setItems(newItems: ListPage<UnsplashPhoto>) {
         newItems.items?.let {
             val diff = DiffUtil.calculateDiff(UnsplashDiffUtilCallback(items, it))
             items.clear()

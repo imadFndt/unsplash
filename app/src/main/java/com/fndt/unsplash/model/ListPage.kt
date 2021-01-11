@@ -1,6 +1,6 @@
 package com.fndt.unsplash.model
 
-data class ListPage(
+data class ListPage<T>(
     var networkStatus: NetworkStatus,
-    var items: List<UnsplashPhoto>?,
+    var items: List<T>?,
 )

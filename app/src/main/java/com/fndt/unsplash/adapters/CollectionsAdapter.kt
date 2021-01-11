@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.fndt.unsplash.databinding.CollectionItemBinding
 import com.fndt.unsplash.model.UnsplashCollection
+import com.fndt.unsplash.model.UnsplashRepository
 import com.fndt.unsplash.util.UnsplashDiffUtilCallback
 import com.squareup.picasso.Picasso
 

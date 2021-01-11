@@ -8,5 +8,6 @@ data class UnsplashCollection(
     @SerializedName("total_photos")
     val totalPhotos: Int,
     @SerializedName("cover_photo")
-    val coverPhoto: UnsplashPhoto
+    val coverPhoto: UnsplashPhoto,
+    val private: Boolean
 ) : UnsplashItems

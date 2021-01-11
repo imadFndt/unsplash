@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.fndt.unsplash.adapters.CollectionsAdapter
+import com.fndt.unsplash.adapters.ImageListAdapter
 import com.fndt.unsplash.databinding.CollectionsFragmentBinding
 import com.fndt.unsplash.model.NetworkStatus
 import com.fndt.unsplash.util.UnsplashApplication
@@ -40,14 +41,17 @@ class CollectionsFragment : Fragment() {
         binding.collectionList.addItemDecoration(dividerItemDecoration)
         binding.collectionList.adapter = adapter
         binding.collectionList.layoutManager = LinearLayoutManager(context)
-        viewModel.networkStatus.observe(viewLifecycleOwner) { status ->
+
+        binding.placeholder.setImageDrawable(ImageListAdapter.circularDrawable(requireContext()))
+
+        viewModel.collections.observe(viewLifecycleOwner) { current ->
+            val status = current.networkStatus
+            val list = current.items
+            binding.collectionList.isVisible = list?.isNotEmpty() == true
             binding.messageTextView.isVisible =
-                status == NetworkStatus.FAILURE && viewModel.collections.value == null
-            binding.placeholder.isVisible = status == NetworkStatus.PENDING
-        }
-        viewModel.collections.observe(viewLifecycleOwner) { list ->
-            binding.collectionList.isVisible = list.isNotEmpty()
-            adapter.setItems(list)
+                status == NetworkStatus.FAILURE && list == null
+            binding.placeholder.isVisible = status == NetworkStatus.PENDING && list?.isEmpty() == true
+            list?.let { adapter.setItems(it) }
         }
     }
 }

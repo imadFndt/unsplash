@@ -30,11 +30,12 @@
             app:layout_constraintTop_toTopOf="parent" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <include
-        android:id="@+id/recycler_layout"
-        layout="@layout/recycler_layout"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/recycler_fragment"
+        android:name="com.fndt.unsplash.fragments.ImageListFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:tag="@string/image_list_tag"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/search_text_layout" />
 </androidx.constraintlayout.widget.ConstraintLayout>

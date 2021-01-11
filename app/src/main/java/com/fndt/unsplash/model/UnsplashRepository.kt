@@ -14,14 +14,14 @@ import javax.inject.Singleton
 @Singleton
 class UnsplashRepository @Inject constructor(private val unsplashService: UnsplashService) {
     val randomPhoto: LiveData<UnsplashPhoto> get() = randomPhotoData
-    val collections: LiveData<List<UnsplashCollection>> get() = collectionsListData
+    val collections: LiveData<ListPage<UnsplashCollection>> get() = collectionsListData
     val networkStatus: LiveData<NetworkStatus> get() = networkStatusData
     val search: LiveData<SearchProcess> get() = searchData
 
     private val randomPhotoData = MutableLiveData<UnsplashPhoto>()
     private val networkStatusData = MutableLiveData(NetworkStatus.SUCCESS)
 
-    private val collectionsListData = MutableLiveData<List<UnsplashCollection>>()
+    private val collectionsListData = MutableLiveData<ListPage<UnsplashCollection>>()
     private val searchData = MutableLiveData<SearchProcess>()
 
     suspend fun requestRandomPhoto() = withContext(Dispatchers.IO) {
@@ -39,11 +39,11 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
             searchData.postValue(SearchProcess.Idle)
             return@withContext
         }
-        val pageList: SparseArray<ListPage?>
+        val pageList: SparseArray<ListPage<UnsplashPhoto>?>
         var totalPages: Int?
         when {
             searchData.value !is SearchProcess.Running || reset -> {
-                pageList = SparseArray<ListPage?>()
+                pageList = SparseArray()
                 totalPages = null
             }
             else -> {
@@ -78,6 +78,22 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
         }
     }
 
+    suspend fun requestCollections(page: Int, reset: Boolean) = withContext(Dispatchers.IO) {
+        val currentList: List<UnsplashCollection>? = collectionsListData.value?.items
+        val listPage: MutableList<UnsplashCollection> =
+            currentList?.let { if (reset) mutableListOf() else it.toMutableList() }
+                ?: run { mutableListOf() }
+        try {
+            collectionsListData.postValue(ListPage(NetworkStatus.PENDING, null))
+            listPage.addAll(getCollections(page))
+            collectionsListData.postValue(ListPage(NetworkStatus.SUCCESS, listPage))
+        } catch (e: CancellationException) {
+            collectionsListData.postValue(ListPage(NetworkStatus.SUCCESS, null))
+        } catch (e: Exception) {
+            collectionsListData.postValue(ListPage(NetworkStatus.FAILURE, null))
+        }
+    }
+
     private suspend fun searchList(query: String, page: Int): UnsplashSearchResult {
         val map = mutableMapOf<String, String>().apply {
             put("query", query)
@@ -88,29 +104,12 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
     }
 
     private suspend fun getCollections(page: Int): List<UnsplashCollection> {
-        val map = mutableMapOf<String, String>().apply {
-            put("page", (page + 1).toString())
-        }
+        val map = mutableMapOf<String, String>().apply { put("page", (page + 1).toString()) }
         return unsplashService.getCollectionsList(map)
     }
 
-    suspend fun requestCollections(page: Int, reset: Boolean) = withContext(Dispatchers.IO) {
-        try {
-            if (!reset) networkStatusData.postValue(NetworkStatus.PENDING)
-            val list = getCollections(page)
-            val result = mutableListOf<UnsplashCollection>()
-            if (!reset) collectionsListData.value?.let { result.addAll(it) }
-            result.addAll(list)
-            collectionsListData.postValue(result)
-        } catch (e: CancellationException) {
-            networkStatusData.postValue(NetworkStatus.SUCCESS)
-        } catch (e: Exception) {
-            networkStatusData.postValue(NetworkStatus.FAILURE)
-        }
-    }
-
     sealed class SearchProcess {
-        data class Running(val pages: SparseArray<ListPage?>, val totalPages: Int?) :
+        data class Running(val pages: SparseArray<ListPage<UnsplashPhoto>?>, val totalPages: Int?) :
             SearchProcess()
 
         object NothingFound : SearchProcess()

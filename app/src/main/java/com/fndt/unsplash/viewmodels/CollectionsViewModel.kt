@@ -10,7 +10,6 @@ import kotlinx.coroutines.launch
 
 class CollectionsViewModel(private val repository: UnsplashRepository) : ViewModel() {
     val collections = repository.collections
-    val networkStatus = repository.networkStatus
     var currentPage = 0
 
     private var currentJob: Job? = null
