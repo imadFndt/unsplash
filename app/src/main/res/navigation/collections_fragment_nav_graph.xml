@@ -7,6 +7,9 @@
         android:id="@+id/collection_list"
         android:name="com.fndt.unsplash.fragments.CollectionsFragment" />
     <fragment
-        android:id="@+id/detailed_collection"
-        android:name="com.fndt.unsplash.fragments.SearchImageSelectedFragment"/>
+        android:id="@+id/collection_image_list"
+        android:name="com.fndt.unsplash.fragments.CollectionImageListFragment" />
+    <fragment
+        android:id="@+id/detailed_image"
+        android:name="com.fndt.unsplash.fragments.CollectionImageSelectedFragment" />
 </navigation>

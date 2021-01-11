@@ -25,13 +25,25 @@ class MainActivity : AppCompatActivity() {
         viewModel.searchSelectedItem.observe(this) { image ->
             val currentController = viewModel.currentController?.value
             currentController ?: return@observe
-
             if (currentController.graph.id == R.id.search_fragment_nav_graph) {
-                image?.let {
-                    currentController.navigateIfNotHere(R.id.image_details)
-                } ?: run {
-                    currentController.navigateUp()
-                }
+                image?.let { currentController.navigateIfNotHere(R.id.image_details) }
+                    ?: run { currentController.navigateUp() }
+            }
+        }
+        viewModel.selectedCollection.observe(this) { collection ->
+            val currentController = viewModel.currentController?.value
+            currentController ?: return@observe
+            if (currentController.graph.id == R.id.collections_fragment_nav_graph) {
+                collection?.let { currentController.navigateIfNotHere(R.id.collection_image_list) }
+                    ?: run { currentController.navigateUp() }
+            }
+        }
+        viewModel.collectionSelectedItem.observe(this) { image ->
+            val currentController = viewModel.currentController?.value
+            currentController ?: return@observe
+            if (currentController.graph.id == R.id.collections_fragment_nav_graph) {
+                image?.let { currentController.navigateIfNotHere(R.id.detailed_image) }
+                    ?: run { currentController.navigateUp() }
             }
         }
     }
@@ -48,7 +60,6 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-
     private fun NavController.navigateIfNotHere(toId: Int) {
         if (this.currentDestination?.id != toId) navigate(toId)
     }
@@ -63,13 +74,19 @@ class MainActivity : AppCompatActivity() {
             R.id.search_fragment_nav_graph -> {
                 val item = viewModel.searchSelectedItem.value
                 item?.let {
-                    viewModel.selectItem(null)
+                    viewModel.selectSearchItem(null)
                 } ?: run {
                     finish()
                 }
             }
             R.id.collections_fragment_nav_graph -> {
-                //TODO
+                val collection = viewModel.selectedCollection.value
+                val image = viewModel.collectionSelectedItem.value
+                image?.let {
+                    viewModel.selectCollectionItem(null)
+                    return
+                }
+                collection?.let { viewModel.selectCollection(null) } ?: run { finish() }
             }
             R.id.random_image_nav_graph -> {
                 super.onBackPressed()

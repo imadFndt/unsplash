@@ -17,8 +17,8 @@ interface UnsplashService {
     @GET("/collections")
     suspend fun getCollectionsList(@QueryMap map: Map<String, String>): List<UnsplashCollection>
 
-    @GET("/collections/{id}")
+    @GET("/collections/{id}/photos")
     suspend fun getCollection(
-        @Path("id") collectionId: Int, @QueryMap map: Map<String, String>
-    ): UnsplashCollection
+        @Path("id") collectionId: String, @QueryMap map: Map<String, String>
+    ): List<UnsplashPhoto>
 }

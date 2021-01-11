@@ -47,7 +47,7 @@ class SearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val recyclerFragment =
             (childFragmentManager.findFragmentByTag(resources.getString(R.string.image_list_tag)) as ImageListFragment).apply {
-                itemClickListener = { activityViewModel.selectItem(it) }
+                itemClickListener = { activityViewModel.selectCollectionItem(it) }
                 onRequestUpdateListener = { viewModel.loadIfAbsent(it) }
                 onScrollListener = { hideKeyboardAndClearTextFocus() }
                 onPageSelectedListener = { viewModel.currentSearchPage = it }

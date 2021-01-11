@@ -1,5 +1,6 @@
 package com.fndt.unsplash.util
 
+import com.fndt.unsplash.viewmodels.CollectionImageListViewModel
 import com.fndt.unsplash.viewmodels.CollectionsViewModel
 import com.fndt.unsplash.viewmodels.RandomImageFragmentViewModel
 import com.fndt.unsplash.viewmodels.SearchFragmentViewModel
@@ -12,4 +13,5 @@ interface UnsplashComponent {
     fun getSearchFragmentModelFactory(): SearchFragmentViewModel.Factory
     fun getRandomImageViewModelFactory(): RandomImageFragmentViewModel.Factory
     fun getCollectionsViewModelFactory(): CollectionsViewModel.Factory
+    fun getCollectionImageListViewModelFactory(): CollectionImageListViewModel.Factory
 }
