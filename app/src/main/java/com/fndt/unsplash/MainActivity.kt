@@ -2,6 +2,7 @@ package com.fndt.unsplash
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import com.fndt.unsplash.databinding.MainActivityBinding
@@ -17,67 +18,37 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this).get(MainActivityViewModel::class.java)
         binding = MainActivityBinding.inflate(layoutInflater)
 
-        binding.bottomNavigationView.selectedItemId =
-            viewModel.currentController?.value?.graph?.id ?: run { R.id.random_image_nav_graph }
-        setupBottomNavigationBar()
+        val controllerData = setupBottomNavigationBar()
+        binding.bottomNavigationView.selectedItemId = viewModel.getCurrentGraph()
         setContentView(binding.root)
 
-        viewModel.searchSelectedItem.observe(this) { image ->
-            val currentController = viewModel.currentController?.value
-            currentController ?: return@observe
-            if (currentController.graph.id == R.id.search_fragment_nav_graph) {
-                image?.let { currentController.navigateIfNotHere(R.id.image_details) }
-                    ?: run { currentController.navigateUp() }
-            }
-        }
-        viewModel.selectedCollection.observe(this) { collection ->
-            val currentController = viewModel.currentController?.value
-            currentController ?: return@observe
-            if (currentController.graph.id == R.id.collections_fragment_nav_graph) {
-                collection?.let { currentController.navigateIfNotHere(R.id.collection_image_list) }
-                    ?: run { currentController.navigateUp() }
-            }
-        }
-        viewModel.collectionSelectedItem.observe(this) { image ->
-            val currentController = viewModel.currentController?.value
-            currentController ?: return@observe
-            if (currentController.graph.id == R.id.collections_fragment_nav_graph) {
-                image?.let { currentController.navigateIfNotHere(R.id.detailed_image) }
-                    ?: run { currentController.navigateUp() }
-            }
+        controllerData.observe(this) { viewModel.setNavState(it.graph.id) }
+        viewModel.navState.observe(this) { navState ->
+            controllerData.value?.let { navState?.navigateToDestination(it) }
         }
     }
 
-    private fun setupBottomNavigationBar() {
-        viewModel.currentController = binding.bottomNavigationView.setupWithNavController(
+    private fun setupBottomNavigationBar(): LiveData<NavController> =
+        binding.bottomNavigationView.setupWithNavController(
             navGraphIds = listOf(
-                R.navigation.random_image_nav_graph,
                 R.navigation.search_fragment_nav_graph,
+                R.navigation.random_image_nav_graph,
                 R.navigation.collections_fragment_nav_graph
             ),
             fragmentManager = supportFragmentManager,
             containerId = R.id.nav_fragment,
         )
-    }
-
-    private fun NavController.navigateIfNotHere(toId: Int) {
-        if (this.currentDestination?.id != toId) navigate(toId)
-    }
 
     override fun onBackPressed() {
-        val controller = viewModel.currentController?.value
-        controller ?: run {
+        val navState = viewModel.navState.value
+        navState ?: run {
             super.onBackPressed()
             return
         }
-        when (controller.graph.id) {
+        when (navState.graphId) {
             R.id.search_fragment_nav_graph -> {
                 val item = viewModel.searchSelectedItem.value
-                item?.let {
-                    viewModel.selectSearchItem(null)
-                } ?: run {
-                    finish()
-                }
+                item?.let { viewModel.selectSearchItem(null) } ?: run { super.onBackPressed() }
             }
             R.id.collections_fragment_nav_graph -> {
                 val collection = viewModel.selectedCollection.value
@@ -86,7 +57,7 @@ class MainActivity : AppCompatActivity() {
                     viewModel.selectCollectionItem(null)
                     return
                 }
-                collection?.let { viewModel.selectCollection(null) } ?: run { finish() }
+                collection?.let { viewModel.selectCollection(null) } ?: run { super.onBackPressed() }
             }
             R.id.random_image_nav_graph -> {
                 super.onBackPressed()

@@ -5,8 +5,18 @@
     app:startDestination="@id/search">
     <fragment
         android:id="@+id/search"
-        android:name="com.fndt.unsplash.fragments.SearchFragment" />
+        android:name="com.fndt.unsplash.fragments.SearchFragment">
+        <action
+            android:id="@+id/search_to_image_details"
+            app:destination="@id/image_details" />
+    </fragment>
     <fragment
         android:id="@+id/image_details"
-        android:name="com.fndt.unsplash.fragments.SearchImageSelectedFragment" />
+        android:name="com.fndt.unsplash.fragments.SearchImageSelectedFragment">
+        <action
+            android:id="@+id/image_details_to_search"
+            app:destination="@id/search"
+            app:popUpTo="@id/search"
+            app:popUpToInclusive="true" />
+    </fragment>
 </navigation>

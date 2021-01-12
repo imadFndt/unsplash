@@ -52,8 +52,7 @@ class CollectionsFragment : Fragment() {
             val status = current.networkStatus
             val list = current.items
             binding.collectionList.isVisible = list?.isNotEmpty() == true
-            binding.messageTextView.isVisible =
-                status == NetworkStatus.FAILURE && list == null
+            binding.messageTextView.isVisible = status == NetworkStatus.FAILURE && list == null
             binding.placeholder.isVisible = status == NetworkStatus.PENDING && list?.isEmpty() == true
             list?.let { adapter.setItems(it) }
         }

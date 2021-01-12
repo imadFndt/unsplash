@@ -1,4 +1,4 @@
-package com.fndt.unsplash.fragments
+package com.fndt.unsplash.fragments.util
 
 import android.content.Intent
 import android.net.Uri
@@ -34,7 +34,7 @@ class ImageDescriptionFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = ImageDescriptionFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }

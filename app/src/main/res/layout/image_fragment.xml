@@ -6,7 +6,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/description_fragment"
-        android:name="com.fndt.unsplash.fragments.ImageDescriptionFragment"
+        android:name="com.fndt.unsplash.fragments.util.ImageDescriptionFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

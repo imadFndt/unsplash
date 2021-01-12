@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.fndt.unsplash.R
 import com.fndt.unsplash.databinding.CollectionImageListFragmentBinding
+import com.fndt.unsplash.fragments.util.ImageListFragment
 import com.fndt.unsplash.util.UnsplashApplication
 import com.fndt.unsplash.viewmodels.CollectionImageListViewModel
 import com.fndt.unsplash.viewmodels.MainActivityViewModel
@@ -25,24 +26,16 @@ class CollectionImageListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val binding = CollectionImageListFragmentBinding.inflate(inflater, container, false)
-//        childFragmentManager.findFragmentByTag(resources.getString(R.string.collections_image_list_tag))
-//            ?.let {
-//                childFragmentManager.beginTransaction()
-//                    .add(R.id.list_fragment, ImageListFragment())
-//                    .commit()
-//            }
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val frag =
-            childFragmentManager.findFragmentByTag(resources.getString(R.string.collections_image_list_tag))
         val listFragment =
             (childFragmentManager.findFragmentByTag(resources.getString(R.string.collections_image_list_tag)) as ImageListFragment).apply {
-                this.onPageSelectedListener = { viewModel.currentSelectedPage = it }
-                this.onRequestUpdateListener = { viewModel.loadIfAbsent(it) }
-                this.itemClickListener = { activityViewModel.selectCollectionItem(it) }
+                onPageSelectedListener = { viewModel.currentSelectedPage = it }
+                onRequestUpdateListener = { viewModel.loadIfAbsent(it) }
+                itemClickListener = { activityViewModel.selectCollectionItem(it) }
             }
         viewModel.collection.observe(viewLifecycleOwner) {
             listFragment.setData(it, viewModel.currentSelectedPage)

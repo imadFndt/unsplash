@@ -14,6 +14,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.fndt.unsplash.R
 import com.fndt.unsplash.databinding.SearchFragmentBinding
+import com.fndt.unsplash.fragments.util.ImageListFragment
 import com.fndt.unsplash.util.UnsplashApplication
 import com.fndt.unsplash.viewmodels.MainActivityViewModel
 import com.fndt.unsplash.viewmodels.SearchFragmentViewModel
@@ -47,7 +48,7 @@ class SearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val recyclerFragment =
             (childFragmentManager.findFragmentByTag(resources.getString(R.string.image_list_tag)) as ImageListFragment).apply {
-                itemClickListener = { activityViewModel.selectCollectionItem(it) }
+                itemClickListener = { activityViewModel.selectSearchItem(it) }
                 onRequestUpdateListener = { viewModel.loadIfAbsent(it) }
                 onScrollListener = { hideKeyboardAndClearTextFocus() }
                 onPageSelectedListener = { viewModel.currentSearchPage = it }

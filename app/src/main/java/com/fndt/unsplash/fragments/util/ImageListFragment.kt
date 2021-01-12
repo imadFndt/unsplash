@@ -1,4 +1,4 @@
-package com.fndt.unsplash.fragments
+package com.fndt.unsplash.fragments.util
 
 import android.os.Bundle
 import android.view.LayoutInflater
