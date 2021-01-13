@@ -40,9 +40,6 @@ class CollectionImageListFragment : Fragment() {
         viewModel.collection.observe(viewLifecycleOwner) {
             listFragment.setData(it, viewModel.currentSelectedPage)
         }
-        activityViewModel.selectedCollection.observe(viewLifecycleOwner) {
-            viewModel.selectedCollection = it
-            viewModel.loadIfAbsent(0)
-        }
+        activityViewModel.selectedCollection.observe(viewLifecycleOwner) { viewModel.setCollection(it) }
     }
 }

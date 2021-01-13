@@ -12,7 +12,7 @@ import com.fndt.unsplash.adapters.ImageListAdapter
 import com.fndt.unsplash.adapters.PagerAdapter
 import com.fndt.unsplash.databinding.RecyclerLayoutBinding
 import com.fndt.unsplash.model.UnsplashPhoto
-import com.fndt.unsplash.model.UnsplashRepository.SearchProcess
+import com.fndt.unsplash.model.UnsplashRepository.DataProcess
 import com.google.android.material.tabs.TabLayoutMediator
 
 class ImageListFragment : Fragment() {
@@ -53,13 +53,13 @@ class ImageListFragment : Fragment() {
         binding.searchPager.registerOnPageChangeCallback(pagerCallback)
     }
 
-    fun setData(status: SearchProcess, currentPage: Int) {
+    fun setData(status: DataProcess, currentPage: Int) {
         updateTextMessage(status)
-        binding.searchPager.isVisible = status is SearchProcess.Running && status.hasData()
-        binding.tabs.isVisible = status is SearchProcess.Running && status.hasData()
-        binding.messageTextView.isVisible = status !is SearchProcess.Running
+        binding.searchPager.isVisible = status is DataProcess.Running && status.hasData()
+        binding.tabs.isVisible = status is DataProcess.Running && status.hasData()
+        binding.messageTextView.isVisible = status !is DataProcess.Running
         binding.placeholder.isVisible = status.isFirstPageLoading()
-        if (status.hasData()) (binding.searchPager.adapter as PagerAdapter).setData(status as SearchProcess.Running)
+        if (status.hasData()) (binding.searchPager.adapter as PagerAdapter).setData(status as DataProcess.Running)
         if (binding.searchPager.currentItem != currentPage) binding.searchPager.currentItem = currentPage
     }
 
@@ -68,13 +68,13 @@ class ImageListFragment : Fragment() {
         super.onDestroyView()
     }
 
-    private fun updateTextMessage(status: SearchProcess) {
+    private fun updateTextMessage(status: DataProcess) {
         binding.messageTextView.text = when (status) {
-            is SearchProcess.Idle, is SearchProcess.Running -> resources.getText(
+            is DataProcess.Idle, is DataProcess.Running -> resources.getText(
                 R.string.searched_pictures_will_be_shown_here
             )
-            is SearchProcess.NothingFound -> resources.getText(R.string.nothing_found)
-            is SearchProcess.Failure -> resources.getText(R.string.bad_network)
+            is DataProcess.NothingFound -> resources.getText(R.string.nothing_found)
+            is DataProcess.Failure -> resources.getText(R.string.bad_network)
         }
     }
 }

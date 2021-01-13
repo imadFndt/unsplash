@@ -10,21 +10,22 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.ceil
 
 @Singleton
 class UnsplashRepository @Inject constructor(private val unsplashService: UnsplashService) {
     val randomPhoto: LiveData<UnsplashPhoto> get() = randomPhotoData
     val collections: LiveData<ListPage<UnsplashCollection>> get() = collectionsListData
     val networkStatus: LiveData<NetworkStatus> get() = networkStatusData
-    val search: LiveData<SearchProcess> get() = searchData
-    val selectedCollectionImages: LiveData<SearchProcess> get() = selectedCollectionImagesData
+    val search: LiveData<DataProcess> get() = searchData
+    val selectedCollectionImages: LiveData<DataProcess> get() = selectedCollectionImagesData
 
 
     private val randomPhotoData = MutableLiveData<UnsplashPhoto>()
     private val networkStatusData = MutableLiveData(NetworkStatus.SUCCESS)
     private val collectionsListData = MutableLiveData<ListPage<UnsplashCollection>>()
-    private val selectedCollectionImagesData = MutableLiveData<SearchProcess>()
-    private val searchData = MutableLiveData<SearchProcess>()
+    private val selectedCollectionImagesData = MutableLiveData<DataProcess>()
+    private val searchData = MutableLiveData<DataProcess>()
 
     suspend fun requestRandomPhoto() = withContext(Dispatchers.IO) {
         networkStatusData.postValue(NetworkStatus.PENDING)
@@ -38,44 +39,16 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
 
     suspend fun requestSearch(query: String, page: Int, reset: Boolean) = withContext(Dispatchers.IO) {
         if (query.isEmpty()) {
-            searchData.postValue(SearchProcess.Idle)
+            searchData.postValue(DataProcess.Idle)
             return@withContext
         }
-        val pageList: SparseArray<ListPage<UnsplashPhoto>?>
-        var totalPages: Int?
-        when {
-            searchData.value !is SearchProcess.Running || reset -> {
-                pageList = SparseArray()
-                totalPages = null
-            }
-            else -> {
-                pageList = (searchData.value as SearchProcess.Running).pages
-                totalPages =
-                    (searchData.value as SearchProcess.Running).totalPages
-            }
-        }
-        try {
-            pageList.put(page, (ListPage(NetworkStatus.PENDING, null)))
-            searchData.postValue(SearchProcess.Running(pageList, totalPages))
-
+        requestImages(page, reset, searchData) { liveData, pageList ->
             val result = searchList(query, page)
-
             if (result.results.isNotEmpty()) {
-                totalPages = result.totalPages
                 pageList.put(page, ListPage(NetworkStatus.SUCCESS, result.results))
-                searchData.postValue(SearchProcess.Running(pageList, totalPages))
+                liveData.postValue(DataProcess.Running(pageList, result.totalPages))
             } else {
-                searchData.postValue(SearchProcess.NothingFound)
-            }
-        } catch (e: CancellationException) {
-            pageList.put(page, ListPage(NetworkStatus.SUCCESS, null))
-            searchData.postValue(SearchProcess.Running(pageList, totalPages))
-        } catch (e: Exception) {
-            if (pageList.isNotEmpty() && pageList.valueAt(0)?.networkStatus == NetworkStatus.PENDING) {
-                searchData.postValue(SearchProcess.Failure)
-            } else {
-                pageList.put(page, ListPage(NetworkStatus.FAILURE, null))
-                searchData.postValue(SearchProcess.Running(pageList, totalPages))
+                liveData.postValue(DataProcess.NothingFound)
             }
         }
     }
@@ -98,41 +71,51 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
 
     suspend fun requestCollectionImages(collection: UnsplashCollection, page: Int, reset: Boolean) =
         withContext(Dispatchers.IO) {
+            requestImages(page, reset, selectedCollectionImagesData) { liveData, pageList ->
+                val result = getCollectionImages(collection.id, page)
+                if (result.isNotEmpty()) {
+                    val totalPages = ceil(collection.totalPhotos.toDouble() / PER_PAGE_IMAGES).toInt()
+                    pageList.put(page, ListPage(NetworkStatus.SUCCESS, result))
+                    liveData.postValue(DataProcess.Running(pageList, totalPages))
+                } else {
+                    liveData.postValue(DataProcess.NothingFound)
+                }
+            }
+            return@withContext
+        }
+
+    private suspend fun requestImages(
+        page: Int,
+        reset: Boolean,
+        liveData: MutableLiveData<DataProcess>,
+        block: suspend (MutableLiveData<DataProcess>, SparseArray<ListPage<UnsplashPhoto>?>) -> Unit
+    ) =
+        withContext(Dispatchers.IO) {
             val pageList: SparseArray<ListPage<UnsplashPhoto>?>
-            var totalPages: Int?
+            val totalPages: Int?
             when {
-                selectedCollectionImagesData.value !is SearchProcess.Running || reset -> {
+                liveData.value !is DataProcess.Running || reset -> {
                     pageList = SparseArray()
                     totalPages = null
                 }
                 else -> {
-                    pageList = (selectedCollectionImagesData.value as SearchProcess.Running).pages
-                    totalPages =
-                        (selectedCollectionImagesData.value as SearchProcess.Running).totalPages
+                    pageList = (liveData.value as DataProcess.Running).pages
+                    totalPages = (liveData.value as DataProcess.Running).totalPages
                 }
             }
             try {
                 pageList.put(page, (ListPage(NetworkStatus.PENDING, null)))
-                selectedCollectionImagesData.postValue(SearchProcess.Running(pageList, totalPages))
-
-                val result = getCollectionImages(collection.id, page)
-
-                if (result.isNotEmpty()) {
-                    totalPages = collection.totalPhotos / PER_PAGE_IMAGES
-                    pageList.put(page, ListPage(NetworkStatus.SUCCESS, result))
-                    selectedCollectionImagesData.postValue(SearchProcess.Running(pageList, totalPages))
-                } else {
-                    selectedCollectionImagesData.postValue(SearchProcess.NothingFound)
-                }
+                liveData.postValue(DataProcess.Running(pageList, totalPages))
+                block(liveData, pageList)
             } catch (e: CancellationException) {
                 pageList.put(page, ListPage(NetworkStatus.SUCCESS, null))
-                selectedCollectionImagesData.postValue(SearchProcess.Running(pageList, totalPages))
+                liveData.postValue(DataProcess.Running(pageList, totalPages))
             } catch (e: Exception) {
                 if (pageList.isNotEmpty() && pageList.valueAt(0)?.networkStatus == NetworkStatus.PENDING) {
-                    selectedCollectionImagesData.postValue(SearchProcess.Failure)
+                    liveData.postValue(DataProcess.Failure)
                 } else {
                     pageList.put(page, ListPage(NetworkStatus.FAILURE, null))
-                    selectedCollectionImagesData.postValue(SearchProcess.Running(pageList, totalPages))
+                    liveData.postValue(DataProcess.Running(pageList, totalPages))
                 }
             }
         }
@@ -159,13 +142,13 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
         return unsplashService.getCollection(collectionId, map)
     }
 
-    sealed class SearchProcess {
+    sealed class DataProcess {
         data class Running(val pages: SparseArray<ListPage<UnsplashPhoto>?>, val totalPages: Int?) :
-            SearchProcess()
+            DataProcess()
 
-        object NothingFound : SearchProcess()
-        object Failure : SearchProcess()
-        object Idle : SearchProcess()
+        object NothingFound : DataProcess()
+        object Failure : DataProcess()
+        object Idle : DataProcess()
 
         fun isFirstPageLoading() = this is Running
                 && pages.size() == 1 && pages.valueAt(0)?.networkStatus == NetworkStatus.PENDING

@@ -1,9 +1,6 @@
 package com.fndt.unsplash.viewmodels
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.fndt.unsplash.model.UnsplashCollection
 import com.fndt.unsplash.model.UnsplashRepository
 import kotlinx.coroutines.Job
@@ -11,16 +8,26 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 
 class CollectionImageListViewModel(private val repository: UnsplashRepository) : ViewModel() {
-    val collection: LiveData<UnsplashRepository.SearchProcess> = repository.selectedCollectionImages
+    val collection: LiveData<UnsplashRepository.DataProcess> = repository.selectedCollectionImages.switchMap {
+        needUpdate = false
+        MutableLiveData(it)
+    }
     var currentSelectedPage: Int = NO_PAGE
-    var selectedCollection: UnsplashCollection? = null
 
     private var currentJob: Job? = null
     private var previousJob: Job? = null
+    private var needUpdate = false
+    private var selectedCollection: UnsplashCollection? = null
 
     fun loadIfAbsent(position: Int) {
-        if (collection.value?.hasDataAtPage(position) == true) return
+        if (collection.value?.hasDataAtPage(position) == true && !needUpdate) return
         requestLoad(position)
+    }
+
+    fun setCollection(unsplashCollection: UnsplashCollection?) {
+        selectedCollection = unsplashCollection
+        needUpdate = true
+        loadIfAbsent(0)
     }
 
     override fun onCleared() {

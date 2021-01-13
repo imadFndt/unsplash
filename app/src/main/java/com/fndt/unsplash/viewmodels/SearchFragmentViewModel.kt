@@ -2,14 +2,14 @@ package com.fndt.unsplash.viewmodels
 
 import androidx.lifecycle.*
 import com.fndt.unsplash.model.UnsplashRepository
-import com.fndt.unsplash.model.UnsplashRepository.SearchProcess
+import com.fndt.unsplash.model.UnsplashRepository.DataProcess
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 
 class SearchFragmentViewModel(private val repository: UnsplashRepository) : ViewModel() {
     val currentSearchText: LiveData<String> get() = currentSearchTextData
-    val search: LiveData<SearchProcess> = repository.search.switchMap {
+    val search: LiveData<DataProcess> = repository.search.switchMap {
         needUpdate = false
         MutableLiveData(it)
     }

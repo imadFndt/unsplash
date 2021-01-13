@@ -48,7 +48,7 @@ class PagerAdapter : RecyclerView.Adapter<PagerAdapter.PagerViewHolder>() {
 
     override fun getItemCount() = totalPages
 
-    fun setData(newData: UnsplashRepository.SearchProcess.Running) {
+    fun setData(newData: UnsplashRepository.DataProcess.Running) {
         totalPages = newData.totalPages!!
         data.clear()
         data.putAll(newData.pages)
