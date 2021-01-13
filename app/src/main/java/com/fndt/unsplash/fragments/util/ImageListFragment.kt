@@ -20,6 +20,7 @@ class ImageListFragment : Fragment() {
     var onScrollListener: (() -> Unit)? = null
     var onRequestUpdateListener: ((Int) -> Unit)? = null
     var onPageSelectedListener: ((Int) -> Unit)? = null
+    lateinit var adapter: PagerAdapter
 
     private lateinit var binding: RecyclerLayoutBinding
 
@@ -42,7 +43,7 @@ class ImageListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.placeholder.setImageDrawable(ImageListAdapter.circularDrawable(requireContext()))
 
-        val adapter = PagerAdapter()
+        adapter = PagerAdapter()
         adapter.onListItemClickListener = { itemClickListener?.invoke(it) }
         adapter.onListScrollListener = { onScrollListener?.invoke() }
         adapter.onUpdatePageListener = { onRequestUpdateListener?.invoke(it) }
@@ -65,6 +66,9 @@ class ImageListFragment : Fragment() {
 
     override fun onDestroyView() {
         binding.searchPager.unregisterOnPageChangeCallback(pagerCallback)
+        adapter.onListItemClickListener = null
+        adapter.onListScrollListener = null
+        adapter.onUpdatePageListener = null
         super.onDestroyView()
     }
 

@@ -29,10 +29,14 @@ abstract class ImageSelectedFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         selectedItem.observe(viewLifecycleOwner) { it?.let { imageDescriptionViewModel.setImage(it) } }
+        binding.updateButton.setOnClickListener {
+            selectedItem.value?.let { imageDescriptionViewModel.setImage(it) }
+        }
         imageDescriptionViewModel.imageNetworkStatus.observe(viewLifecycleOwner) { status ->
             binding.placeholder.isVisible = status == NetworkStatus.PENDING
             binding.descriptionFragment.isVisible = status == NetworkStatus.SUCCESS
             binding.statusText.isVisible = status == NetworkStatus.FAILURE
+            binding.updateButton.isVisible = status == NetworkStatus.FAILURE
         }
     }
 }

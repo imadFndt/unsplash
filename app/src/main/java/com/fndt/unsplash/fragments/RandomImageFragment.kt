@@ -36,10 +36,12 @@ class RandomImageFragment : Fragment() {
         viewModel.randomImage.value ?: viewModel.requestUpdate()
         viewModel.randomImage.observe(viewLifecycleOwner) { it?.let { imageDescriptionViewModel.setImage(it) } }
         binding.placeholder.setImageDrawable(ImageListAdapter.circularDrawable(requireContext()))
+        binding.updateButton.setOnClickListener { viewModel.requestUpdate() }
         viewModel.networkStatus.observe(viewLifecycleOwner) { status ->
             binding.placeholder.isVisible = status == NetworkStatus.PENDING
             binding.descriptionFragment.isVisible = status == NetworkStatus.SUCCESS
             binding.statusText.isVisible = status == NetworkStatus.FAILURE
+            binding.updateButton.isVisible = status == NetworkStatus.FAILURE
         }
         imageDescriptionViewModel.imageNetworkStatus.observe(viewLifecycleOwner) { status ->
             viewModel.setImageStatus(status)

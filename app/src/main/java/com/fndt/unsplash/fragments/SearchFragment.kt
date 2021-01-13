@@ -72,6 +72,12 @@ class SearchFragment : Fragment() {
 
     override fun onDestroyView() {
         binding.searchEditText.removeTextChangedListener(searchTextWatcher)
+        (childFragmentManager.findFragmentByTag(resources.getString(R.string.image_list_tag)) as ImageListFragment).apply {
+            itemClickListener = null
+            onRequestUpdateListener = null
+            onScrollListener = null
+            onPageSelectedListener = null
+        }
         super.onDestroyView()
     }
 

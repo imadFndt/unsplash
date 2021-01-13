@@ -25,6 +25,7 @@ class CollectionImageListViewModel(private val repository: UnsplashRepository) :
     }
 
     fun setCollection(unsplashCollection: UnsplashCollection?) {
+        if (selectedCollection == unsplashCollection) return
         selectedCollection = unsplashCollection
         needUpdate = true
         loadIfAbsent(0)
