@@ -41,14 +41,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         val navState = viewModel.navState.value
-        navState ?: run {
-            super.onBackPressed()
-            return
-        }
-        when (navState.graphId) {
+        when (navState?.graphId) {
             R.id.search_fragment_nav_graph -> {
                 val item = viewModel.searchSelectedItem.value
-                item?.let { viewModel.selectSearchItem(null) } ?: run { super.onBackPressed() }
+                item?.let { viewModel.selectSearchItem(null) } ?: run { clearAndFinish() }
             }
             R.id.collections_fragment_nav_graph -> {
                 val collection = viewModel.selectedCollection.value
@@ -57,11 +53,16 @@ class MainActivity : AppCompatActivity() {
                     viewModel.selectCollectionItem(null)
                     return
                 }
-                collection?.let { viewModel.selectCollection(null) } ?: run { super.onBackPressed() }
+                collection?.let { viewModel.selectCollection(null) } ?: run { clearAndFinish() }
             }
-            R.id.random_image_nav_graph -> {
-                super.onBackPressed()
+            else -> {
+                clearAndFinish()
             }
         }
+    }
+
+    private fun clearAndFinish() {
+        viewModelStore.clear()
+        finish()
     }
 }

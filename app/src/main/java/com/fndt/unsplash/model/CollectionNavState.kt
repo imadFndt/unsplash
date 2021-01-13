@@ -13,11 +13,6 @@ class CollectionNavState : NavState() {
             R.id.collection_image_list_to_detailed_image,
             null
         )
-    override val backwardDirections = listOf(
-        null,
-        R.id.collection_image_list_to_collection_list,
-        R.id.detailed_image_to_collection_image_list
-    )
 
     override var actualDestinationId: Int = destinations[0]
     override var graphId = R.id.collections_fragment_nav_graph

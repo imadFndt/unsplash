@@ -5,7 +5,6 @@ import com.fndt.unsplash.R
 class SearchNavState : NavState() {
     override val destinations = listOf(R.id.search, R.id.image_details)
     override val forwardDirections = listOf(R.id.search_to_image_details, null)
-    override val backwardDirections = listOf(null, R.id.image_details_to_search)
     override var actualDestinationId: Int = destinations[0]
     override var graphId = R.id.search_fragment_nav_graph
 

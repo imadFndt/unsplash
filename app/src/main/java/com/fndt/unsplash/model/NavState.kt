@@ -8,7 +8,6 @@ abstract class NavState : MutableLiveData<NavState>() {
     abstract var graphId: Int
     protected abstract val destinations: List<Int?>
     protected abstract val forwardDirections: List<Int?>
-    protected abstract val backwardDirections: List<Int?>
 
     fun navigateToDestination(navController: NavController) {
         val currentId = navController.currentDestination?.id
@@ -17,8 +16,8 @@ abstract class NavState : MutableLiveData<NavState>() {
         val destinationIndex = destinations.indexOf(actualDestinationId)
         val distance = destinationIndex - currentIndex
         for (i in if (distance > 0) currentIndex until destinationIndex else currentIndex downTo (destinationIndex + 1)) {
-            val actionId = if (distance > 0) forwardDirections[i] else backwardDirections[i]
-            actionId?.let { navController.navigate(it) }
+            val actionId = if (distance > 0) forwardDirections[i] else null
+            actionId?.let { navController.navigate(it) } ?: run { navController.navigateUp() }
         }
     }
 }

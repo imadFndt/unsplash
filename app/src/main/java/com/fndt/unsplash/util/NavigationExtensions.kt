@@ -91,8 +91,6 @@ fun BottomNavigationView.setupWithNavController(
         }
     }
 
-    //setupItemReselected(graphIdToTagMap, fragmentManager)
-
     fragmentManager.addOnBackStackChangedListener {
         if (!isOnFirstFragment && !fragmentManager.isOnBackStack(firstFragmentTag)) {
             this.selectedItemId = firstFragmentGraphId
@@ -105,20 +103,6 @@ fun BottomNavigationView.setupWithNavController(
         }
     }
     return selectedNavController
-}
-
-private fun BottomNavigationView.setupItemReselected(
-    graphIdToTagMap: SparseArray<String>, fragmentManager: FragmentManager
-) {
-    setOnNavigationItemReselectedListener { item ->
-        val newlySelectedItemTag = graphIdToTagMap[item.itemId]
-        val selectedFragment = fragmentManager.findFragmentByTag(newlySelectedItemTag)
-                as NavHostFragment
-        val navController = selectedFragment.navController
-        navController.popBackStack(
-            navController.graph.startDestination, false
-        )
-    }
 }
 
 private fun detachNavHostFragment(fragmentManager: FragmentManager, navHostFragment: NavHostFragment) {
