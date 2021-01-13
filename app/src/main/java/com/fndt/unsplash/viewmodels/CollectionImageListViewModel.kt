@@ -7,6 +7,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 
+const val IMAGES_RESET = -1
+
 class CollectionImageListViewModel(private val repository: UnsplashRepository) : ViewModel() {
     val collection: LiveData<UnsplashRepository.DataProcess> = repository.selectedCollectionImages.switchMap {
         needUpdate = false
@@ -54,5 +56,3 @@ class CollectionImageListViewModel(private val repository: UnsplashRepository) :
         }
     }
 }
-
-const val IMAGES_RESET = -1

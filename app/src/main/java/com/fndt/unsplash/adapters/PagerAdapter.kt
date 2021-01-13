@@ -30,7 +30,7 @@ class PagerAdapter : RecyclerView.Adapter<PagerAdapter.PagerViewHolder>() {
         val itemsAdapter = ImageListAdapter()
         itemsAdapter.itemClickListener = { onListItemClickListener?.invoke(it) }
         holder.binding.updateButton.setOnClickListener {
-            val pos = holder.adapterPosition
+            val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_POSITION) onUpdatePageListener?.invoke(pos)
         }
         setupRecyclerView(holder.binding, itemsAdapter)

@@ -12,10 +12,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.ceil
 
+const val PER_PAGE_IMAGES = 21
+
 @Singleton
 class UnsplashRepository @Inject constructor(private val unsplashService: UnsplashService) {
     val randomPhoto: LiveData<UnsplashPhoto> get() = randomPhotoData
-    val collections: LiveData<ListPage<UnsplashCollection>> get() = collectionsListData
+    val collections: LiveData<Pair<Int, ListPage<UnsplashCollection>>> get() = collectionsListData
     val networkStatus: LiveData<NetworkStatus> get() = networkStatusData
     val search: LiveData<DataProcess> get() = searchData
     val selectedCollectionImages: LiveData<DataProcess> get() = selectedCollectionImagesData
@@ -23,7 +25,7 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
 
     private val randomPhotoData = MutableLiveData<UnsplashPhoto>()
     private val networkStatusData = MutableLiveData(NetworkStatus.SUCCESS)
-    private val collectionsListData = MutableLiveData<ListPage<UnsplashCollection>>()
+    private val collectionsListData = MutableLiveData<Pair<Int, ListPage<UnsplashCollection>>>()
     private val selectedCollectionImagesData = MutableLiveData<DataProcess>()
     private val searchData = MutableLiveData<DataProcess>()
 
@@ -54,18 +56,22 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
     }
 
     suspend fun requestCollections(page: Int, reset: Boolean) = withContext(Dispatchers.IO) {
-        val currentList: List<UnsplashCollection>? = collectionsListData.value?.items
+        val currentList: List<UnsplashCollection>? = collectionsListData.value?.second?.items
         val listPage: MutableList<UnsplashCollection> =
             currentList?.let { if (reset) mutableListOf() else it.toMutableList() }
                 ?: run { mutableListOf() }
         try {
-            collectionsListData.postValue(ListPage(NetworkStatus.PENDING, null))
+            collectionsListData.postValue(
+                Pair(page, ListPage(NetworkStatus.PENDING, if (reset) null else listPage))
+            )
             listPage.addAll(getCollections(page))
-            collectionsListData.postValue(ListPage(NetworkStatus.SUCCESS, listPage))
+            collectionsListData.postValue(Pair(page, ListPage(NetworkStatus.SUCCESS, listPage)))
         } catch (e: CancellationException) {
-            collectionsListData.postValue(ListPage(NetworkStatus.SUCCESS, null))
+            collectionsListData.postValue(Pair(page, ListPage(NetworkStatus.SUCCESS, null)))
         } catch (e: Exception) {
-            collectionsListData.postValue(ListPage(NetworkStatus.FAILURE, null))
+            collectionsListData.postValue(
+                Pair(page, ListPage(NetworkStatus.FAILURE, if (listPage.isEmpty()) null else listPage))
+            )
         }
     }
 
@@ -160,5 +166,3 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
             this is Running && pages.size() >= 1 && pages.get(page)?.items?.isNotEmpty() == true
     }
 }
-
-const val PER_PAGE_IMAGES = 21

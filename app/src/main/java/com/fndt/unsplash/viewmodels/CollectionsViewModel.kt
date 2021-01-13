@@ -1,16 +1,16 @@
 package com.fndt.unsplash.viewmodels
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.fndt.unsplash.model.UnsplashRepository
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 class CollectionsViewModel(private val repository: UnsplashRepository) : ViewModel() {
-    val collections = repository.collections
+    val collections = repository.collections.switchMap { pair ->
+        currentPage = pair.first
+        MutableLiveData(pair.second)
+    }
     var currentPage = 0
+    var isLoading: Boolean = false
 
     private var currentJob: Job? = null
     private var previousJob: Job? = null
@@ -26,9 +26,10 @@ class CollectionsViewModel(private val repository: UnsplashRepository) : ViewMod
     private fun requestCollections(page: Int) {
         previousJob = currentJob
         currentJob = viewModelScope.launch {
+            withContext(Dispatchers.Main) { isLoading = true }
             previousJob?.cancelAndJoin()
             repository.requestCollections(page, page == 0)
-            currentPage = page
+            withContext(Dispatchers.Main) { isLoading = false }
         }
     }
 

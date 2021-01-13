@@ -12,7 +12,6 @@ import com.squareup.picasso.Picasso
 
 class CollectionsAdapter : RecyclerView.Adapter<CollectionsAdapter.CollectionsViewHolder>() {
     var onListItemClickListener: ((UnsplashCollection) -> Unit)? = null
-    var onUpdatePageListener: ((page: Int) -> Unit)? = null
 
     private val items = mutableListOf<UnsplashCollection>()
 
@@ -20,7 +19,7 @@ class CollectionsAdapter : RecyclerView.Adapter<CollectionsAdapter.CollectionsVi
         val inflater = LayoutInflater.from(parent.context)
         val holder = CollectionsViewHolder(CollectionItemBinding.inflate(inflater, parent, false))
         holder.itemView.setOnClickListener {
-            val pos = holder.adapterPosition
+            val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_POSITION) onListItemClickListener?.invoke(items[pos])
         }
         return holder

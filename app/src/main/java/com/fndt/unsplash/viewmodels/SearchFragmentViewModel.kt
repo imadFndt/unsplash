@@ -7,6 +7,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 
+const val NO_PAGE = -1
+
 class SearchFragmentViewModel(private val repository: UnsplashRepository) : ViewModel() {
     val currentSearchText: LiveData<String> get() = currentSearchTextData
     val search: LiveData<DataProcess> = repository.search.switchMap {
@@ -57,5 +59,3 @@ class SearchFragmentViewModel(private val repository: UnsplashRepository) : View
         }
     }
 }
-
-const val NO_PAGE = -1

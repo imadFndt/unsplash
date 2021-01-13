@@ -26,7 +26,7 @@ class ImageListAdapter : RecyclerView.Adapter<ImageListAdapter.ImageListViewHold
             binding.itemImage.layoutParams.height = parent.measuredWidth / 3
         }
         holder.binding.itemImage.setOnClickListener {
-            val pos = holder.adapterPosition
+            val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_POSITION) itemClickListener?.invoke(items[pos])
         }
         holder.binding.badNetworkText.isVisible = false
