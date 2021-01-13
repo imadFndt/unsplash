@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/collections_fragment_nav_graph"
+    app:startDestination="@id/collection_list">
+    <fragment
+        android:id="@+id/collection_list"
+        android:name="com.fndt.unsplash.fragments.CollectionsFragment">
+        <action
+            android:id="@+id/collection_list_to_collection_image_list"
+            app:destination="@id/collection_image_list" />
+    </fragment>
+    <fragment
+        android:id="@+id/collection_image_list"
+        android:name="com.fndt.unsplash.fragments.CollectionImageListFragment">
+        <action
+            android:id="@+id/collection_image_list_to_detailed_image"
+            app:destination="@id/detailed_image" />
+        <action
+            android:id="@+id/collection_image_list_to_collection_list"
+            app:destination="@id/collection_list"
+            app:popUpTo="@id/collection_list"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailed_image"
+        android:name="com.fndt.unsplash.fragments.CollectionImageSelectedFragment">
+        <action
+            android:id="@+id/detailed_image_to_collection_image_list"
+            app:destination="@id/collection_image_list"
+            app:popUpTo="@id/collection_image_list"
+            app:popUpToInclusive="true" />
+    </fragment>
+</navigation>
