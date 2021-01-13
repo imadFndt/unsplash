@@ -30,8 +30,10 @@ class SearchFragmentViewModel(private val repository: UnsplashRepository) : View
     }
 
     fun loadIfAbsent(position: Int) {
-        if (search.value?.hasDataAtPage(position) == true && !needUpdate) return
-        currentSearchText.value?.let { requestSearch(it, if (needUpdate) 0 else position) }
+        if (search.value?.hasDataAtPage(position) == true && !needUpdate && position != IMAGES_RESET) return
+        currentSearchText.value?.let {
+            requestSearch(it, if (needUpdate || position == IMAGES_RESET) 0 else position)
+        }
     }
 
     override fun onCleared() {

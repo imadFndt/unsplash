@@ -20,8 +20,8 @@ class CollectionImageListViewModel(private val repository: UnsplashRepository) :
     private var selectedCollection: UnsplashCollection? = null
 
     fun loadIfAbsent(position: Int) {
-        if (collection.value?.hasDataAtPage(position) == true && !needUpdate) return
-        requestLoad(position)
+        if (collection.value?.hasDataAtPage(position) == true && !needUpdate && position != IMAGES_RESET) return
+        requestLoad(if (position == IMAGES_RESET) 0 else position)
     }
 
     fun setCollection(unsplashCollection: UnsplashCollection?) {
@@ -54,3 +54,5 @@ class CollectionImageListViewModel(private val repository: UnsplashRepository) :
         }
     }
 }
+
+const val IMAGES_RESET = -1

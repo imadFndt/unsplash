@@ -19,6 +19,10 @@ class CollectionsViewModel(private val repository: UnsplashRepository) : ViewMod
         requestCollections(0)
     }
 
+    fun loadIfAbsent(position: Int) {
+        requestCollections(position)
+    }
+
     private fun requestCollections(page: Int) {
         previousJob = currentJob
         currentJob = viewModelScope.launch {

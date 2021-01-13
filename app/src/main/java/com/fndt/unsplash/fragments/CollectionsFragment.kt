@@ -47,13 +47,15 @@ class CollectionsFragment : Fragment() {
         binding.collectionList.layoutManager = LinearLayoutManager(context)
 
         binding.placeholder.setImageDrawable(ImageListAdapter.circularDrawable(requireContext()))
+        binding.updateButton.setOnClickListener { viewModel.loadIfAbsent(0) }
 
         viewModel.collections.observe(viewLifecycleOwner) { current ->
             val status = current.networkStatus
             val list = current.items
             binding.collectionList.isVisible = list?.isNotEmpty() == true
             binding.messageTextView.isVisible = status == NetworkStatus.FAILURE && list == null
-            binding.placeholder.isVisible = status == NetworkStatus.PENDING && list?.isEmpty() == true
+            binding.placeholder.isVisible =
+                status == NetworkStatus.PENDING && (list == null || list.isEmpty())
             list?.let { adapter.setItems(it) }
         }
     }

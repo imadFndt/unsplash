@@ -13,6 +13,7 @@ import com.fndt.unsplash.adapters.PagerAdapter
 import com.fndt.unsplash.databinding.RecyclerLayoutBinding
 import com.fndt.unsplash.model.UnsplashPhoto
 import com.fndt.unsplash.model.UnsplashRepository.DataProcess
+import com.fndt.unsplash.viewmodels.IMAGES_RESET
 import com.google.android.material.tabs.TabLayoutMediator
 
 class ImageListFragment : Fragment() {
@@ -42,6 +43,7 @@ class ImageListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.placeholder.setImageDrawable(ImageListAdapter.circularDrawable(requireContext()))
+        binding.updateButton.setOnClickListener { onRequestUpdateListener?.invoke(IMAGES_RESET) }
 
         adapter = PagerAdapter()
         adapter.onListItemClickListener = { itemClickListener?.invoke(it) }
@@ -60,6 +62,7 @@ class ImageListFragment : Fragment() {
         binding.tabs.isVisible = status is DataProcess.Running && status.hasData()
         binding.messageTextView.isVisible = status !is DataProcess.Running
         binding.placeholder.isVisible = status.isFirstPageLoading()
+        binding.updateButton.isVisible = status is DataProcess.Failure
         if (status.hasData()) (binding.searchPager.adapter as PagerAdapter).setData(status as DataProcess.Running)
         if (binding.searchPager.currentItem != currentPage) binding.searchPager.currentItem = currentPage
     }

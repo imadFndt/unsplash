@@ -19,13 +19,14 @@ class CollectionImageListFragment : Fragment() {
         (requireActivity().application as UnsplashApplication).component.getCollectionImageListViewModelFactory()
     }
     private val activityViewModel: MainActivityViewModel by activityViewModels()
+    private lateinit var binding: CollectionImageListFragmentBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = CollectionImageListFragmentBinding.inflate(inflater, container, false)
+        binding = CollectionImageListFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -40,6 +41,12 @@ class CollectionImageListFragment : Fragment() {
         viewModel.collection.observe(viewLifecycleOwner) {
             listFragment.setData(it, viewModel.currentSelectedPage)
         }
-        activityViewModel.selectedCollection.observe(viewLifecycleOwner) { viewModel.setCollection(it) }
+        activityViewModel.selectedCollection.observe(viewLifecycleOwner) { collection ->
+            viewModel.setCollection(collection)
+            collection?.let {
+                binding.collectionsTitle.text =
+                    resources.getString(R.string.collections_title, collection.title)
+            }
+        }
     }
 }
