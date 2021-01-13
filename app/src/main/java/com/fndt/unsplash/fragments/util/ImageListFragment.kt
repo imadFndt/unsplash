@@ -15,6 +15,7 @@ import com.fndt.unsplash.model.UnsplashPhoto
 import com.fndt.unsplash.model.UnsplashRepository.DataProcess
 import com.fndt.unsplash.viewmodels.IMAGES_RESET
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.*
 
 class ImageListFragment : Fragment() {
     var itemClickListener: ((UnsplashPhoto) -> Unit)? = null
@@ -24,6 +25,7 @@ class ImageListFragment : Fragment() {
     lateinit var adapter: PagerAdapter
 
     private lateinit var binding: RecyclerLayoutBinding
+    private var pageJob: Job? = null
 
     private val pagerCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
@@ -64,10 +66,18 @@ class ImageListFragment : Fragment() {
         binding.placeholder.isVisible = status.isFirstPageLoading()
         binding.updateButton.isVisible = status is DataProcess.Failure
         if (status.hasData()) (binding.searchPager.adapter as PagerAdapter).setData(status as DataProcess.Running)
-        if (binding.searchPager.currentItem != currentPage) binding.searchPager.currentItem = currentPage
+        if (binding.searchPager.currentItem != currentPage) updateSelectedPage(currentPage)
+    }
+
+    private fun updateSelectedPage(currentPage: Int) {
+        pageJob = CoroutineScope(Dispatchers.Main).launch {
+            delay(50)
+            if (isActive) binding.searchPager.currentItem = currentPage
+        }
     }
 
     override fun onDestroyView() {
+        pageJob?.cancel()
         binding.searchPager.unregisterOnPageChangeCallback(pagerCallback)
         adapter.onListItemClickListener = null
         adapter.onListScrollListener = null
