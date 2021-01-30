@@ -41,12 +41,14 @@ class ImageDescriptionFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.setNetworkStatus(NetworkStatus.PENDING)
-        viewModel.image.observe(viewLifecycleOwner) { image ->
-            binding.image.let { Picasso.get().load(image.urls.regular).into(it, picassoCallback) }
-            binding.widthValue.text = resources.getString(R.string.value_pixels, image.width.toString())
-            binding.heightValue.text = resources.getString(R.string.value_pixels, image.height.toString())
-            binding.imageLinkButton.setOnClickListener { openLink(image.urls.full) }
-            binding.descriptionValue.text = image.description
+        viewModel.image.observe(viewLifecycleOwner) { newImage ->
+            with(binding) {
+                image.let { Picasso.get().load(newImage.urls.regular).into(it, picassoCallback) }
+                widthValue.text = getString(R.string.value_pixels, newImage.width.toString())
+                heightValue.text = getString(R.string.value_pixels, newImage.height.toString())
+                imageLinkButton.setOnClickListener { openLink(newImage.urls.full) }
+                descriptionValue.text = newImage.description
+            }
         }
     }
 

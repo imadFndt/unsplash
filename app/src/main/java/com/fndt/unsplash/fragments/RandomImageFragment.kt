@@ -43,8 +43,6 @@ class RandomImageFragment : Fragment() {
             binding.statusText.isVisible = status == NetworkStatus.FAILURE
             binding.updateButton.isVisible = status == NetworkStatus.FAILURE
         }
-        imageDescriptionViewModel.imageNetworkStatus.observe(viewLifecycleOwner) { status ->
-            viewModel.setImageStatus(status)
-        }
+        imageDescriptionViewModel.imageNetworkStatus.observe(viewLifecycleOwner) { viewModel.setImageStatus(it) }
     }
 }

@@ -33,10 +33,12 @@ abstract class ImageSelectedFragment : Fragment() {
             selectedItem.value?.let { imageDescriptionViewModel.setImage(it) }
         }
         imageDescriptionViewModel.imageNetworkStatus.observe(viewLifecycleOwner) { status ->
-            binding.placeholder.isVisible = status == NetworkStatus.PENDING
-            binding.descriptionFragment.isVisible = status == NetworkStatus.SUCCESS
-            binding.statusText.isVisible = status == NetworkStatus.FAILURE
-            binding.updateButton.isVisible = status == NetworkStatus.FAILURE
+            with(binding) {
+                placeholder.isVisible = status == NetworkStatus.PENDING
+                descriptionFragment.isVisible = status == NetworkStatus.SUCCESS
+                statusText.isVisible = status == NetworkStatus.FAILURE
+                updateButton.isVisible = status == NetworkStatus.FAILURE
+            }
         }
     }
 }

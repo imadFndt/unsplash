@@ -33,7 +33,7 @@ class CollectionImageListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val listFragment =
-            (childFragmentManager.findFragmentByTag(resources.getString(R.string.collections_image_list_tag)) as ImageListFragment).apply {
+            (childFragmentManager.findFragmentByTag(getString(R.string.collections_image_list_tag)) as ImageListFragment).apply {
                 onPageSelectedListener = { viewModel.currentSelectedPage = it }
                 onRequestUpdateListener = { viewModel.loadIfAbsent(it) }
                 itemClickListener = { activityViewModel.selectCollectionItem(it) }
@@ -44,8 +44,7 @@ class CollectionImageListFragment : Fragment() {
         activityViewModel.selectedCollection.observe(viewLifecycleOwner) { collection ->
             viewModel.setCollection(collection)
             collection?.let {
-                binding.collectionsTitle.text =
-                    resources.getString(R.string.collections_title, collection.title)
+                binding.collectionsTitle.text = getString(R.string.collections_title, collection.title)
             }
         }
     }

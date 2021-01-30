@@ -42,28 +42,30 @@ class CollectionsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val adapter = CollectionsAdapter()
+        val collectionsAdapter = CollectionsAdapter()
         val loadingAdapter = InfiniteScrollAdapter()
-        adapter.onListItemClickListener = { activityViewModel.selectCollection(it) }
+        collectionsAdapter.onListItemClickListener = { activityViewModel.selectCollection(it) }
         val dividerItemDecoration =
             DividerItemDecoration(binding.collectionList.context, LinearLayout.VERTICAL)
-        binding.collectionList.addItemDecoration(dividerItemDecoration)
-        binding.collectionList.adapter = ConcatAdapter(adapter, loadingAdapter)
-        binding.collectionList.layoutManager = LinearLayoutManager(context)
-        binding.collectionList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                val layoutManager = binding.collectionList.layoutManager as LinearLayoutManager
-                val totalItemCount = layoutManager.itemCount
-                val lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition()
-                if (totalItemCount - VISIBLE_THRESHOLD == lastVisibleItem) {
-                    if (!viewModel.isLoading) {
-                        viewModel.loadIfAbsent(viewModel.currentPage + 1)
-                        loadingAdapter.setState(true)
+        with(binding.collectionList) {
+            addItemDecoration(dividerItemDecoration)
+            adapter = ConcatAdapter(collectionsAdapter, loadingAdapter)
+            layoutManager = LinearLayoutManager(context)
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    val layoutManager = binding.collectionList.layoutManager as LinearLayoutManager
+                    val totalItemCount = layoutManager.itemCount
+                    val lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition()
+                    if (totalItemCount - VISIBLE_THRESHOLD >= lastVisibleItem) {
+                        if (!viewModel.isLoading) {
+                            viewModel.loadIfAbsent(viewModel.currentPage + 1)
+                            loadingAdapter.setState(true)
+                        }
                     }
                 }
-            }
-        })
+            })
+        }
 
         binding.placeholder.setImageDrawable(ImageListAdapter.circularDrawable(binding.placeholder.context))
         binding.updateButton.setOnClickListener { viewModel.loadIfAbsent(0) }
@@ -72,12 +74,14 @@ class CollectionsFragment : Fragment() {
             val status = current.networkStatus
             val list = current.items
             loadingAdapter.setState(status == NetworkStatus.PENDING)
-            binding.collectionList.isVisible = list?.isNotEmpty() == true
-            binding.messageTextView.isVisible = status == NetworkStatus.FAILURE && list == null
-            binding.placeholder.isVisible =
-                status == NetworkStatus.PENDING && (list == null || list.isEmpty())
-            binding.updateButton.isVisible = status == NetworkStatus.FAILURE && list == null
-            list?.let { adapter.setItems(it) }
+            with(binding) {
+                collectionList.isVisible = list?.isNotEmpty() == true
+                messageTextView.isVisible = status == NetworkStatus.FAILURE && list == null
+                placeholder.isVisible =
+                    status == NetworkStatus.PENDING && (list == null || list.isEmpty())
+                updateButton.isVisible = status == NetworkStatus.FAILURE && list == null
+                list?.let { collectionsAdapter.setItems(it) }
+            }
         }
     }
 }

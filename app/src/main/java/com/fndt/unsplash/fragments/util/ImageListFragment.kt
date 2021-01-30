@@ -48,9 +48,11 @@ class ImageListFragment : Fragment() {
         binding.updateButton.setOnClickListener { onRequestUpdateListener?.invoke(IMAGES_RESET) }
 
         adapter = PagerAdapter()
-        adapter.onListItemClickListener = { itemClickListener?.invoke(it) }
-        adapter.onListScrollListener = { onScrollListener?.invoke() }
-        adapter.onUpdatePageListener = { onRequestUpdateListener?.invoke(it) }
+        with(adapter) {
+            onListItemClickListener = { itemClickListener?.invoke(it) }
+            onListScrollListener = { onScrollListener?.invoke() }
+            onUpdatePageListener = { onRequestUpdateListener?.invoke(it) }
+        }
         binding.searchPager.adapter = adapter
         TabLayoutMediator(binding.tabs, binding.searchPager) { tab, index ->
             tab.text = (index + 1).toString()
@@ -79,9 +81,11 @@ class ImageListFragment : Fragment() {
     override fun onDestroyView() {
         pageJob?.cancel()
         binding.searchPager.unregisterOnPageChangeCallback(pagerCallback)
-        adapter.onListItemClickListener = null
-        adapter.onListScrollListener = null
-        adapter.onUpdatePageListener = null
+        with(adapter) {
+            onListItemClickListener = null
+            onListScrollListener = null
+            onUpdatePageListener = null
+        }
         super.onDestroyView()
     }
 

@@ -38,8 +38,7 @@ class MainActivityViewModel : ViewModel() {
         navStateData.value = collectionNavState
     }
 
-    fun getCurrentGraph() =
-        navState.value?.graphId ?: run { R.id.random_image_nav_graph }
+    fun getCurrentGraph() = navState.value?.graphId ?: run { R.id.random_image_nav_graph }
 
     fun setNavState(id: Int) {
         navStateData.value = when (id) {

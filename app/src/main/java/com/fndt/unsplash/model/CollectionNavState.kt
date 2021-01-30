@@ -4,14 +4,11 @@ import com.fndt.unsplash.R
 
 
 class CollectionNavState : NavState() {
-    override val destinations =
-        listOf(R.id.collection_list, R.id.collection_image_list, R.id.detailed_image)
+    override val destinations = listOf(R.id.collection_list, R.id.collection_image_list, R.id.detailed_image)
 
     override val forwardDirections =
         listOf(
-            R.id.collection_list_to_collection_image_list,
-            R.id.collection_image_list_to_detailed_image,
-            null
+            R.id.collection_list_to_collection_image_list, R.id.collection_image_list_to_detailed_image, null
         )
 
     override var actualDestinationId: Int = destinations[0]

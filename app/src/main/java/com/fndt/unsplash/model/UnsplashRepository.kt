@@ -58,8 +58,7 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
     suspend fun requestCollections(page: Int, reset: Boolean) = withContext(Dispatchers.IO) {
         val currentList: List<UnsplashCollection>? = collectionsListData.value?.second?.items
         val listPage: MutableList<UnsplashCollection> =
-            currentList?.let { if (reset) mutableListOf() else it.toMutableList() }
-                ?: run { mutableListOf() }
+            currentList?.let { if (reset) mutableListOf() else it.toMutableList() } ?: run { mutableListOf() }
         try {
             collectionsListData.postValue(
                 Pair(page, ListPage(NetworkStatus.PENDING, if (reset) null else listPage))
@@ -95,36 +94,35 @@ class UnsplashRepository @Inject constructor(private val unsplashService: Unspla
         reset: Boolean,
         liveData: MutableLiveData<DataProcess>,
         block: suspend (MutableLiveData<DataProcess>, SparseArray<ListPage<UnsplashPhoto>?>) -> Unit
-    ) =
-        withContext(Dispatchers.IO) {
-            val pageList: SparseArray<ListPage<UnsplashPhoto>?>
-            val totalPages: Int?
-            when {
-                liveData.value !is DataProcess.Running || reset -> {
-                    pageList = SparseArray()
-                    totalPages = null
-                }
-                else -> {
-                    pageList = (liveData.value as DataProcess.Running).pages
-                    totalPages = (liveData.value as DataProcess.Running).totalPages
-                }
+    ) = withContext(Dispatchers.IO) {
+        val pageList: SparseArray<ListPage<UnsplashPhoto>?>
+        val totalPages: Int?
+        when {
+            liveData.value !is DataProcess.Running || reset -> {
+                pageList = SparseArray()
+                totalPages = null
             }
-            try {
-                pageList.put(page, (ListPage(NetworkStatus.PENDING, null)))
-                liveData.postValue(DataProcess.Running(pageList, totalPages))
-                block(liveData, pageList)
-            } catch (e: CancellationException) {
-                pageList.put(page, ListPage(NetworkStatus.SUCCESS, null))
-                liveData.postValue(DataProcess.Running(pageList, totalPages))
-            } catch (e: Exception) {
-                if (pageList.isNotEmpty() && pageList.valueAt(0)?.networkStatus == NetworkStatus.PENDING) {
-                    liveData.postValue(DataProcess.Failure)
-                } else {
-                    pageList.put(page, ListPage(NetworkStatus.FAILURE, null))
-                    liveData.postValue(DataProcess.Running(pageList, totalPages))
-                }
+            else -> {
+                pageList = (liveData.value as DataProcess.Running).pages
+                totalPages = (liveData.value as DataProcess.Running).totalPages
             }
         }
+        try {
+            pageList.put(page, (ListPage(NetworkStatus.PENDING, null)))
+            liveData.postValue(DataProcess.Running(pageList, totalPages))
+            block(liveData, pageList)
+        } catch (e: CancellationException) {
+            pageList.put(page, ListPage(NetworkStatus.SUCCESS, null))
+            liveData.postValue(DataProcess.Running(pageList, totalPages))
+        } catch (e: Exception) {
+            if (pageList.isNotEmpty() && pageList.valueAt(0)?.networkStatus == NetworkStatus.PENDING) {
+                liveData.postValue(DataProcess.Failure)
+            } else {
+                pageList.put(page, ListPage(NetworkStatus.FAILURE, null))
+                liveData.postValue(DataProcess.Running(pageList, totalPages))
+            }
+        }
+    }
 
     private suspend fun searchList(query: String, page: Int): UnsplashSearchResult {
         val map = mutableMapOf<String, String>().apply {

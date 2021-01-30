@@ -54,15 +54,17 @@ class SearchFragment : Fragment() {
                 onPageSelectedListener = { viewModel.currentSearchPage = it }
             }
 
-        binding.searchEditText.setText(viewModel.currentSearchText.value)
-        binding.searchEditText.addTextChangedListener(searchTextWatcher)
-        binding.searchEditText.setOnEditorActionListener { _, actionId, event ->
-            viewModel.setText(binding.searchEditText.text.toString())
-            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                hideKeyboardAndClearTextFocus()
-                return@setOnEditorActionListener true
+        with(binding.searchEditText) {
+            setText(viewModel.currentSearchText.value)
+            addTextChangedListener(searchTextWatcher)
+            setOnEditorActionListener { _, actionId, _ ->
+                viewModel.setText(binding.searchEditText.text.toString())
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    hideKeyboardAndClearTextFocus()
+                    return@setOnEditorActionListener true
+                }
+                return@setOnEditorActionListener false
             }
-            return@setOnEditorActionListener false
         }
 
         viewModel.search.observe(viewLifecycleOwner) { status ->
